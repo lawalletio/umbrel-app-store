@@ -1,0 +1,29 @@
+manifestVersion: 1
+id: lawallet-lightning
+category: bitcoin
+name: LaWallet Lightning
+version: "0.5.0"
+tagline: LaWallet Lightning
+icon: https://raw.githubusercontent.com/lawalletio/urlx/refs/heads/main/umbrel-app/public/icon.png
+description: >-
+  LaWallet module that enables support for Lightning.
+  LUD06, LUD16, LUD21 and NIP57
+developer: La Crypta
+website: https://lawallet.io
+dependencies:
+  - lawallet-core
+  - lightning
+  - nostr-relay
+repo: https://github.com/lawalletio/urlx
+support: https://t.me/lacryptaok
+port: 4988
+gallery:
+  - https://raw.githubusercontent.com/lawalletio/urlx/refs/heads/main/umbrel-app/public/1.png
+  - https://raw.githubusercontent.com/lawalletio/urlx/refs/heads/main/umbrel-app/public/2.png
+  - https://raw.githubusercontent.com/lawalletio/urlx/refs/heads/main/umbrel-app/public/3.png
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: Agustin Kassis
+submission: https://github.com/getumbrel/umbrel/pull/566
+releaseNotes: ""
