@@ -1,0 +1,26 @@
+manifestVersion: 1
+id: lawallet-core
+category: bitcoin
+name: LaWallet Core
+version: "0.5.0"
+tagline: LaWallet Backend
+icon: https://raw.githubusercontent.com/lawalletio/ledger/f5e220a5cda91c805ed97a567ae9bbc8eb3169e6/umbrel-app/public/icon.svg
+description: >-
+  LaWallet core module to provide complete backend
+developer: La Crypta
+website: https://lawallet.io
+dependencies:
+  - nostr-relay
+repo: https://github.com/lawalletio/ledger
+support: https://t.me/lacryptaok
+port: 3088
+gallery:
+  - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/1.png
+  - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/2.png
+  - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/3.png
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: Agustin Kassis
+submission: https://github.com/getumbrel/umbrel/pull/566
+releaseNotes: ""
