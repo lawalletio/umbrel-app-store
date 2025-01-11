@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: lawallet_nfc_1
+      APP_PORT: 4989
+      PROXY_AUTH_ADD: "false"
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    restart: always
+    environment:
+      DATABASE_HOST: localhost
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: lawallet-extension
+    ports:
+      - 5432:5432
+    volumes:
+      - "${APP_DATA_DIR}/data/postgres:/data"
+
+  app:
+    image: lawallet/ledger:latest
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://root:root@postgres/lawallet-extension"
+    depends_on:
+      - postgres
+    restart: "on-failure"
+    stop_grace_period: "1m"
+    init: true
