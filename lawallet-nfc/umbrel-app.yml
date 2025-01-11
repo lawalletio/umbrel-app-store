@@ -4,7 +4,7 @@ category: bitcoin
 name: LaWallet NFC
 version: "0.5.0"
 tagline: LaWallet Lightning
-icon: https://raw.githubusercontent.com/lawalletio/card/refs/heads/main/umbrel-app/public/icon.png
+icon: https://raw.githubusercontent.com/lawalletio/card/refs/heads/main/umbrel-app/public/icon.svg
 description: >-
   LaWallet module that enables support for NFC.
   BoltCard standard
