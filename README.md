@@ -1,4 +1,4 @@
-## LaWalletUmbrel Community App Store
+## LaWallet Umbrel Community App Store
 
 This repository is a template to create an LaWallet Umbrel Community App Store. These additional app stores allow developers to distribute applications without submitting to the [Official Umbrel App Store](https://github.com/getumbrel/umbrel-apps).
 
