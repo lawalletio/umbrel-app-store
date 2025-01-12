@@ -8,9 +8,12 @@ icon: https://raw.githubusercontent.com/lawalletio/ledger/f5e220a5cda91c805ed97a
 description: >-
   LaWallet is a modular platform designed to provide secure, customizable Lightning wallets for communities. It integrates with local Nostr relays, using Nostr events authorization to ensure tamper-proof transaction management. The Core Module serves as the system's foundation, acting as a pubkey ledger that calculates balances as the sum of all transactions and publishes real-time proof of funds.
 
+
   The platform’s modular design allows for flexibility and scalability. Features like multi-token management, API integrations, and plugin support enable communities to customize and deploy wallets suited to their specific needs. Additional modules, such as Lightning and NFC, enhance functionality with advanced payment options and NFC compatibility.
 
+
   LaWallet’s open-source nature ensures accessibility for developers and organizations, simplifying the setup and management of Lightning wallets. Its architecture is designed for replication, making it ideal for fostering decentralized financial ecosystems.
+
 
   By combining modularity, security, and transparency, LaWallet provides a robust and flexible tool for communities looking to adopt Bitcoin and Lightning payments efficiently.
 developer: La Crypta
