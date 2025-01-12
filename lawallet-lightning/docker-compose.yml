@@ -11,7 +11,7 @@ services:
     image: redis:7-alpine
     restart: always
     ports:
-      - '6379:6379'
+      - "6379:6379"
     command: redis-server --save 20 1
     volumes:
       - cache:/data
@@ -25,9 +25,6 @@ services:
       REDIS_URI: redis://cache:6379
       PORT: 4988
       NOSTR_RELAYS: "ws://localhost:4848"
-
-    depends_on:
-      - postgres
     restart: "on-failure"
     stop_grace_period: "1m"
     init: true
