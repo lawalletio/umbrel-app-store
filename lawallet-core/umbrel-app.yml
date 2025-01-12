@@ -6,7 +6,17 @@ version: "0.5.0"
 tagline: LaWallet Backend
 icon: https://raw.githubusercontent.com/lawalletio/ledger/f5e220a5cda91c805ed97a567ae9bbc8eb3169e6/umbrel-app/public/icon.svg
 description: >-
-  LaWallet core module to provide complete backend
+  LaWallet Core
+  The Core Module is the pubkey ledger of LaWallet, connecting to the local Nostr relay and using Nostr events authorization to manage tokens and balances securely. It calculates the resulting balance as the sum of all transactions, providing proof of funds via balance events.
+
+  Key Features:
+  - Local Nostr Relay Integration: Subscribes to transactions for real-time updates.
+  - Pubkey Ledger Mapping: Links balances and tokens to user pubkeys.
+  - Transaction Handling: Manages internal, inbound, and outbound transactions.
+  - Multi-Token Support: Ensures flexibility for different asset types.
+  - Event Publishing: Publishes balance events as proof of funds to the Nostr relay.
+  - HTTP API Endpoint: Enables integration with external applications.
+  The Core Module ensures reliable and tamper-proof ledger management, serving as the foundation for the wallet’s operations.
 developer: La Crypta
 website: https://lawallet.io
 dependencies:
