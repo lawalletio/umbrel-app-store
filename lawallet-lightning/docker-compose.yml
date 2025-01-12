@@ -23,8 +23,8 @@ services:
     environment:
       NODE_ENV: production
       REDIS_URI: redis://cache:6379
-      PORT=4988
-      NOSTR_RELAYS=ws://localhost:4848
+      PORT: 4988
+      NOSTR_RELAYS: "ws://localhost:4848"
 
     depends_on:
       - postgres
