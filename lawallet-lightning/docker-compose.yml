@@ -7,27 +7,38 @@ services:
       APP_PORT: 4988
       PROXY_AUTH_ADD: "false"
 
-  postgres:
-    container_name: postgres_lawallet_lightning
-    image: postgres:15
+  cache:
+    image: redis:7-alpine
     restart: always
-    environment:
-      DATABASE_HOST: localhost
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: lawallet-extension
     ports:
-      - 5432:5432
+      - '6379:6379'
+    command: redis-server --save 20 1
     volumes:
-      - "${APP_DATA_DIR}/data/postgres:/data"
+      - cache:/data
+    networks:
+      - lawallet
 
   app:
-    image: lawallet/ledger:latest
+    image: masize/lawallet-lightning:latest
     environment:
       NODE_ENV: production
-      DATABASE_URL: "postgresql://root:root@postgres/lawallet-extension"
+      REDIS_URI: redis://cache:6379
+      PORT=4988
+      NOSTR_RELAYS=ws://localhost:4848
+
     depends_on:
       - postgres
     restart: "on-failure"
     stop_grace_period: "1m"
     init: true
+    depends_on:
+      - cache
+    networks:
+      - lawallet
+
+  volumes:
+    cache:
+      driver: local
+  networks:
+    lawallet:
+      external: true
