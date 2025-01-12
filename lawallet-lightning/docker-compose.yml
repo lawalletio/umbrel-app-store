@@ -8,6 +8,7 @@ services:
       PROXY_AUTH_ADD: "false"
 
   cache:
+    container_name: cache_lawallet_lightning
     image: redis:7-alpine
     restart: always
     ports:
