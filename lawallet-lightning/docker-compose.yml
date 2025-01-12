@@ -29,7 +29,3 @@ services:
     init: true
     depends_on:
       - cache
-
-  volumes:
-    cache:
-      driver: local
