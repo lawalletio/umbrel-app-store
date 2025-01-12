@@ -6,17 +6,13 @@ version: "0.5.0"
 tagline: LaWallet Backend
 icon: https://raw.githubusercontent.com/lawalletio/ledger/f5e220a5cda91c805ed97a567ae9bbc8eb3169e6/umbrel-app/public/icon.svg
 description: >-
-  LaWallet Core
-  The Core Module is the pubkey ledger of LaWallet, connecting to the local Nostr relay and using Nostr events authorization to manage tokens and balances securely. It calculates the resulting balance as the sum of all transactions, providing proof of funds via balance events.
+  LaWallet is a modular platform designed to provide secure, customizable Lightning wallets for communities. It integrates with local Nostr relays, using Nostr events authorization to ensure tamper-proof transaction management. The Core Module serves as the system's foundation, acting as a pubkey ledger that calculates balances as the sum of all transactions and publishes real-time proof of funds.
 
-  Key Features:
-  - Local Nostr Relay Integration: Subscribes to transactions for real-time updates.
-  - Pubkey Ledger Mapping: Links balances and tokens to user pubkeys.
-  - Transaction Handling: Manages internal, inbound, and outbound transactions.
-  - Multi-Token Support: Ensures flexibility for different asset types.
-  - Event Publishing: Publishes balance events as proof of funds to the Nostr relay.
-  - HTTP API Endpoint: Enables integration with external applications.
-  The Core Module ensures reliable and tamper-proof ledger management, serving as the foundation for the wallet’s operations.
+  The platform’s modular design allows for flexibility and scalability. Features like multi-token management, API integrations, and plugin support enable communities to customize and deploy wallets suited to their specific needs. Additional modules, such as Lightning and NFC, enhance functionality with advanced payment options and NFC compatibility.
+
+  LaWallet’s open-source nature ensures accessibility for developers and organizations, simplifying the setup and management of Lightning wallets. Its architecture is designed for replication, making it ideal for fostering decentralized financial ecosystems.
+
+  By combining modularity, security, and transparency, LaWallet provides a robust and flexible tool for communities looking to adopt Bitcoin and Lightning payments efficiently.
 developer: La Crypta
 website: https://lawallet.io
 dependencies:
