@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: root
       POSTGRES_DB: lawallet-extension
     ports:
-      - 5432:5432
+      - 5433:5432
     volumes:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
