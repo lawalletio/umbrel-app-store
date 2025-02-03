@@ -4,7 +4,7 @@ category: bitcoin
 name: LaWallet Core
 version: "0.5.0"
 tagline: LaWallet Backend
-icon: https://raw.githubusercontent.com/lawalletio/ledger/f5e220a5cda91c805ed97a567ae9bbc8eb3169e6/umbrel-app/public/icon.png
+icon: https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/icon.png
 description: >-
   LaWallet is a modular platform designed to provide secure, customizable Lightning wallets for communities. It integrates with local Nostr relays, using Nostr events authorization to ensure tamper-proof transaction management. The Core Module serves as the system's foundation, acting as a pubkey ledger that calculates balances as the sum of all transactions and publishes real-time proof of funds.
 
