@@ -4,7 +4,7 @@ category: bitcoin
 name: LaWallet NFC
 version: "0.5.0"
 tagline: LaWallet Lightning
-icon: https://raw.githubusercontent.com/lawalletio/card/refs/heads/main/umbrel-app/public/icon.svg
+icon: https://raw.githubusercontent.com/lawalletio/card/refs/heads/main/umbrel-app/public/icon.png
 description: >-
   The NFC Module extends LaWallet’s functionality with near-field communication (NFC) capabilities, enabling seamless interaction with the Lightning Network. It relies on the Core and Lightning Modules for secure operation and transaction handling.
 
