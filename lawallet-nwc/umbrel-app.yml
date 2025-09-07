@@ -13,7 +13,7 @@ dependencies:
   - albyhub
 repo: https://github.com/lawalletio/ledger
 support: https://t.me/lacryptaok
-port: 3088
+port: 9877
 gallery:
   - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/3.png
 path: ""
