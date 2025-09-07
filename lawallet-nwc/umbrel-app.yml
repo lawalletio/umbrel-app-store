@@ -1,0 +1,24 @@
+manifestVersion: 1
+id: lawallet-nwc
+category: bitcoin
+name: LaWallet NWC
+version: "0.5.0"
+tagline: LaWallet Backend
+icon: https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/icon.png
+description: >-
+  LaWallet NWC is provides a user dashboard for managing an admin dashboard and a wallet for users to setup with NWC and Boltcard standard.
+developer: La Crypta
+website: https://lawallet.io
+dependencies:
+  - albyhub
+repo: https://github.com/lawalletio/ledger
+support: https://t.me/lacryptaok
+port: 3088
+gallery:
+  - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/3.png
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: Agustin Kassis
+submission: https://github.com/getumbrel/umbrel/pull/566
+releaseNotes: ""
