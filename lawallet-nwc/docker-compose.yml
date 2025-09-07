@@ -4,11 +4,11 @@ services:
   app_proxy:
     environment:
       APP_HOST: lawallet_nwc_1
-      APP_PORT: 3088
+      APP_PORT: 9877
       PROXY_AUTH_ADD: "false"
 
   postgres:
-    container_name: postgres_lawallet_core
+    container_name: postgres_lawallet_nwc
     image: postgres:15
     restart: always
     environment:
@@ -22,10 +22,11 @@ services:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
   app:
-    image: masize/lawallet-nwc:0.5.1
+    image: masize/lawallet-nwc:0.5.2
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
+      PORT: 9877
     depends_on:
       - postgres
     restart: "on-failure"
