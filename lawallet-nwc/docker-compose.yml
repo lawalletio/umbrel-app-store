@@ -12,7 +12,6 @@ services:
     image: postgres:15
     restart: always
     environment:
-      DATABASE_HOST: localhost
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: lawallet-nwc
