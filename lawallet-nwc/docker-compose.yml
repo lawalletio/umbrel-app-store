@@ -21,13 +21,15 @@ services:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
   app:
-    image: masize/lawallet-nwc:0.5.3
+    image: masize/lawallet-nwc:0.5.4
+    hostname: lawallet_nwc_1
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
       PORT: 9877
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: "on-failure"
     stop_grace_period: "1m"
     init: true
