@@ -2,16 +2,16 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "0.5.4"
+version: "0.5.5"
 tagline: LaWallet Backend
 icon: https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/icon.png
 description: >-
-  LaWallet NWC is provides a user dashboard for managing an admin dashboard and a wallet for users to setup with NWC and Boltcard standard.
+  LaWallet NWC merges Lightning Address, Boltcard and NWC, providing a PWA wallet for end-users and admin dashboard for managing.
 developer: La Crypta
 website: https://lawallet.io
 dependencies:
   - albyhub
-repo: https://github.com/lawalletio/ledger
+repo: https://github.com/lawalletio/lawallet-nwc
 support: https://t.me/lacryptaok
 port: 9877
 gallery:
