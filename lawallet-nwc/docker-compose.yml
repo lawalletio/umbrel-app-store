@@ -22,8 +22,8 @@ services:
 
   app:
     image: masize/lawallet-nwc:0.5.4
-    ports:
-      - "9877:9877"
+    # ports:
+    #   - "9877:9877"
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
