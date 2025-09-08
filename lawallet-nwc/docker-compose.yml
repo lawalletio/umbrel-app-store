@@ -28,7 +28,8 @@ services:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
       PORT: 9877
-    depends_on: postgres
+    depends_on:
+      - postgres
     restart: "on-failure"
     stop_grace_period: "1m"
     init: true
