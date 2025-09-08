@@ -1,11 +1,11 @@
 version: "3.8"
 
 services:
-  app_proxy:
-    environment:
-      APP_HOST: lawallet_nwc_1
-      APP_PORT: 9877
-      PROXY_AUTH_ADD: "false"
+  # app_proxy:
+  #   environment:
+  #     APP_HOST: lawallet_nwc_1
+  #     APP_PORT: 9877
+  #     PROXY_AUTH_ADD: "false"
 
   postgres:
     container_name: postgres_lawallet_nwc
@@ -21,7 +21,7 @@ services:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
   app:
-    image: masize/lawallet-nwc:0.5.4
+    image: masize/lawallet-nwc:0.5.3
     ports:
       - "9877:9877"
     environment:
