@@ -21,7 +21,7 @@ services:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
   app:
-    image: masize/lawallet-nwc:0.5.4
+    image: masize/lawallet-nwc:0.5.3
     # ports:
     #   - "9877:9877"
     environment:
