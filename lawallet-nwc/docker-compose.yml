@@ -15,7 +15,7 @@ services:
       - "${APP_DATA_DIR}/data/postgres:/data"
 
   app:
-    image: masize/lawallet-nwc:0.5.3
+    image: masize/lawallet-nwc:0.6.0
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
