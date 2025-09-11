@@ -6,8 +6,7 @@ services:
       APP_HOST: lawallet-nwc_1
       APP_PORT: 9877
       PROXY_AUTH_ADD: "false"
-  app:
-    container_name: lawallet-nwc
+  lawallet-nwc:
     image: masize/lawallet-nwc:0.6.2
     environment:
       NODE_ENV: production
@@ -19,7 +18,6 @@ services:
     stop_grace_period: "1m"
     init: true
   postgres:
-    container_name: postgres_lawallet_nwc
     image: postgres:15
     restart: always
     environment:
