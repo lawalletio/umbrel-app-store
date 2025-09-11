@@ -3,10 +3,11 @@ version: "3.8"
 services:
   app_proxy:
     environment:
-      APP_HOST: lawallet_nwc_1
+      APP_HOST: lawallet-nwc_1
       APP_PORT: 9877
       PROXY_AUTH_ADD: "false"
   app:
+    container_name: lawallet-nwc
     image: masize/lawallet-nwc:0.6.1
     environment:
       NODE_ENV: production
