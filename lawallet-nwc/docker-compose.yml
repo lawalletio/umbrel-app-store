@@ -7,6 +7,7 @@ services:
       APP_PORT: 9877
       PROXY_AUTH_ADD: "false"
   lawallet-nwc:
+    container_name: lawallet-nwc_1
     image: masize/lawallet-nwc:0.6.3
     environment:
       NODE_ENV: production
