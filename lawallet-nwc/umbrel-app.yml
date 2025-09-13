@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "0.6.11"
+version: "0.6.4"
 tagline: LaWallet Backend
 icon: https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/icon.png
 description: >-
