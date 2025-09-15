@@ -8,7 +8,7 @@ services:
       PROXY_AUTH_ADD: "false"
   lawallet-nwc:
     container_name: lawallet-nwc_1
-    image: masize/lawallet-nwc:0.6.7
+    image: masize/lawallet-nwc:0.6.8
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://root:root@postgres/lawallet-nwc"
@@ -28,4 +28,4 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - "${APP_DATA_DIR}/data/postgres:/data"
+      - "${APP_DATA_DIR}/data/postgres:/var/lib/postgresql/data"
