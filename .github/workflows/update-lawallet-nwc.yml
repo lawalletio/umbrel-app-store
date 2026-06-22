@@ -107,7 +107,7 @@ jobs:
           grep -RIn 'image: masize/lawallet-nwc:' lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
           grep -n 'Published image:' README.md
 
-      - name: Open package update pull request
+      - name: Open and merge package update pull request
         env:
           GH_TOKEN: ${{ secrets.UMBREL_APP_STORE_UPDATE_TOKEN }}
           VERSION: ${{ steps.package.outputs.version }}
@@ -166,3 +166,13 @@ jobs:
               --title "Update LaWallet NWC to ${VERSION}" \
               --body-file "${BODY_FILE}"
           fi
+
+          PR_URL="$(gh pr view "${BRANCH}" --repo "${GITHUB_REPOSITORY}" --json url --jq .url)"
+          echo "Merging ${PR_URL}"
+
+          gh pr merge "${PR_URL}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --squash \
+            --delete-branch \
+            --subject "Update LaWallet NWC to ${VERSION}" \
+            --body "Automated Umbrel package update for ${IMAGE}."
