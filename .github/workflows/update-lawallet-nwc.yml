@@ -15,8 +15,7 @@ on:
         type: string
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: update-lawallet-nwc-${{ github.event.client_payload.version || inputs.version || github.run_id }}
@@ -30,6 +29,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: master
+          persist-credentials: false
 
       - name: Resolve package inputs
         id: package
@@ -109,7 +109,7 @@ jobs:
 
       - name: Open package update pull request
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.UMBREL_APP_STORE_UPDATE_TOKEN }}
           VERSION: ${{ steps.package.outputs.version }}
           IMAGE: ${{ steps.package.outputs.image }}
           BRANCH: ${{ steps.package.outputs.branch }}
@@ -117,6 +117,11 @@ jobs:
           SOURCE_RUN_URL: ${{ github.event.client_payload.source_run_url }}
         run: |
           set -euo pipefail
+
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::Missing UMBREL_APP_STORE_UPDATE_TOKEN. Configure a token with contents and pull request write access to lawalletio/umbrel-app-store."
+            exit 1
+          fi
 
           if git diff --quiet; then
             echo "LaWallet NWC package is already up to date."
@@ -126,6 +131,7 @@ jobs:
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -B "${BRANCH}"
           git add README.md lawallet-nwc/umbrel-app.yml lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
           git commit -m "Update LaWallet NWC to ${VERSION}"
