@@ -12,8 +12,6 @@ description: >-
   routing for Lightning payments.
 developer: La Crypta
 website: https://lawallet.io
-dependencies:
-  - albyhub
 repo: https://github.com/lawalletio/lawallet-nwc
 support: https://t.me/lacryptaok
 port: 2288
@@ -28,5 +26,5 @@ submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: >-
   Initial Umbrel packaging for LaWallet NWC 1.0.0. The app runs the published
   LaWallet web image, persists PostgreSQL data under the Umbrel app data
-  directory, opens directly to /admin, and exposes a Docker health check backed
-  by /api/health.
+  directory, opens directly to /admin, requires no external Umbrel app
+  dependencies, and exposes a Docker health check backed by /api/health.

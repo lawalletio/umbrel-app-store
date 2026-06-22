@@ -31,12 +31,16 @@ if [[ "${lawallet_ready}" != "true" ]]; then
 fi
 
 lnd_ready=false
+lnd_block_height=""
 for attempt in $(seq 1 60); do
   if lnd_info="$(docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" exec -T lnd \
     lncli --network=regtest --rpcserver=localhost:10009 --tlscertpath=/root/.lnd/tls.cert getinfo 2>/dev/null)" && \
-    printf "%s" "${lnd_info}" | grep -q '"synced_to_chain": true'; then
-    lnd_ready=true
-    break
+    printf "%s" "${lnd_info}" | grep -q '"network": "regtest"'; then
+    lnd_block_height="$(printf "%s" "${lnd_info}" | sed -n 's/.*"block_height": \([0-9][0-9]*\),.*/\1/p' | head -n 1)"
+    if [[ -n "${lnd_block_height}" && "${lnd_block_height}" -ge 101 ]]; then
+      lnd_ready=true
+      break
+    fi
   fi
   sleep 2
 done
@@ -48,7 +52,7 @@ if [[ "${lnd_ready}" != "true" ]]; then
 fi
 
 echo "LaWallet health check passed: ${response}"
-echo "LND regtest check passed."
+echo "LND regtest check passed at block height ${lnd_block_height}."
 echo "Admin UI: http://127.0.0.1:${LAWALLET_PORT}/admin"
 echo "Bitcoin regtest RPC: 127.0.0.1:${BITCOIN_RPC_PORT:-18443} user=umbrel password=umbrel"
 echo "LND regtest ports: grpc=${LND_GRPC_PORT:-10009} rest=${LND_REST_PORT:-18080}"

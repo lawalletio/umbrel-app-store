@@ -11,7 +11,7 @@ as an Umbrel community app.
 - Internal port: `2288`
 - Health check: `GET /api/health`
 - Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
-- Umbrel dependency: `albyhub`, used as the local NWC provider during setup
+- Umbrel dependencies: none. Alby Hub is not required.
 
 ## Local Smoke Test
 
@@ -50,4 +50,5 @@ rm -rf .umbrel-local/lawallet-nwc
 ## Using The Community App Store
 
 Add this repository URL as a community app store in the umbrelOS UI, then install
-`LaWallet NWC`.
+`LaWallet NWC`. The app installs directly from this store without requiring
+Alby Hub or any other Umbrel app to be installed first.
