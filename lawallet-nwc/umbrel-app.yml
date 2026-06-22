@@ -4,7 +4,7 @@ category: bitcoin
 name: LaWallet NWC
 version: "1.0.0"
 tagline: Lightning Address platform and Nostr CRM
-icon: https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/logos/lawallet.png
+icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
   LaWallet NWC is an open-source platform for creating, managing, and serving
   Lightning Addresses connected to Nostr Wallet Connect. It includes an admin
