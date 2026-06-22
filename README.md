@@ -1,9 +1,53 @@
-## LaWallet Umbrel Community App Store
+# LaWallet Umbrel Community App Store
 
-This repository is a template to create an LaWallet Umbrel Community App Store. These additional app stores allow developers to distribute applications without submitting to the [Official Umbrel App Store](https://github.com/getumbrel/umbrel-apps).
+This repository packages [LaWallet NWC](https://github.com/lawalletio/lawallet-nwc)
+as an Umbrel community app.
 
-## How to use:
+## App
 
-To use your Community App Store, you can add its GitHub url the umbrelOS user interface as shown in the following demo:
+- App id: `lawallet-nwc`
+- App entrypoint: `/admin/`
+- Published image: `masize/lawallet-nwc:1.0.0`
+- Internal port: `2288`
+- Health check: `GET /api/health`
+- Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
+- Umbrel dependency: `albyhub`, used as the local NWC provider during setup
 
-https://user-images.githubusercontent.com/10330103/197889452-e5cd7e96-3233-4a09-b475-94b754adc7a3.mp4
+## Local Smoke Test
+
+Run the app with local Postgres, Bitcoin Core regtest, and LND regtest:
+
+```bash
+./scripts/smoke-local.sh
+```
+
+The script leaves the stack running when successful.
+
+Default local endpoints:
+
+- LaWallet admin: http://127.0.0.1:2289/admin
+- LaWallet health: http://127.0.0.1:2289/api/health
+- Bitcoin regtest RPC: `127.0.0.1:18443`, user `umbrel`, password `umbrel`
+- LND regtest gRPC: `127.0.0.1:10009`
+- LND regtest REST: `127.0.0.1:18080`
+
+Local state is written to `.umbrel-local/lawallet-nwc/` and ignored by git.
+
+To stop the local stack:
+
+```bash
+docker compose --project-name lawallet-nwc-local --file test/docker-compose.regtest.yml down
+```
+
+To reset the local stack:
+
+```bash
+docker compose --project-name lawallet-nwc-local --file test/docker-compose.regtest.yml down
+rm -rf .umbrel-local/lawallet-nwc
+./scripts/smoke-local.sh
+```
+
+## Using The Community App Store
+
+Add this repository URL as a community app store in the umbrelOS UI, then install
+`LaWallet NWC`.

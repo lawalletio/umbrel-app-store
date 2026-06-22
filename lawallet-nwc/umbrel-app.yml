@@ -2,23 +2,31 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "0.7.0"
-tagline: LaWallet Backend
-icon: https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/icon.png
+version: "1.0.0"
+tagline: Lightning Address platform and Nostr CRM
+icon: https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/logos/lawallet.png
 description: >-
-  LaWallet NWC merges Lightning Address, Boltcard and NWC, providing a PWA wallet for end-users and admin dashboard for managing.
+  LaWallet NWC is an open-source platform for creating, managing, and serving
+  Lightning Addresses connected to Nostr Wallet Connect. It includes an admin
+  dashboard for operators, a user wallet, BoltCard workflows, and NWC-based
+  routing for Lightning payments.
 developer: La Crypta
 website: https://lawallet.io
 dependencies:
   - albyhub
 repo: https://github.com/lawalletio/lawallet-nwc
 support: https://t.me/lacryptaok
-port: 9877
+port: 2288
 gallery:
-  - https://raw.githubusercontent.com/lawalletio/ledger/refs/heads/main/umbrel-app/public/3.png
-path: ""
+  - https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/mobile-wallet-connect.png
+  - https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/images/onboarding-hero.jpg
+path: /admin/
 defaultUsername: ""
 defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
-releaseNotes: ""
+releaseNotes: >-
+  Initial Umbrel packaging for LaWallet NWC 1.0.0. The app runs the published
+  LaWallet web image, persists PostgreSQL data under the Umbrel app data
+  directory, opens directly to /admin, and exposes a Docker health check backed
+  by /api/health.
