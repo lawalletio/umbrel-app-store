@@ -1,0 +1,109 @@
+services:
+  bitcoin:
+    image: ghcr.io/getumbrel/docker-bitcoind:v30.2@sha256:75ad7da4eaa2a56b92e5703ff39fa86aa7b9012c50749ca082f018a761d136cd
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        rm -f /data/.bitcoin/regtest/.ready
+        bitcoind -regtest \
+          -server=1 \
+          -rpcbind=0.0.0.0 \
+          -rpcallowip=0.0.0.0/0 \
+          -rpcuser=umbrel \
+          -rpcpassword=umbrel \
+          -rpcport=18443 \
+          -txindex=1 \
+          -fallbackfee=0.00001 \
+          -disablewallet=0 \
+          -zmqpubrawblock=tcp://0.0.0.0:28332 \
+          -zmqpubrawtx=tcp://0.0.0.0:28333 &
+        BITCOIND_PID=$$!
+        until bitcoin-cli -regtest -rpcuser=umbrel -rpcpassword=umbrel getblockchaininfo >/dev/null 2>&1; do sleep 1; done
+        bitcoin-cli -regtest -rpcuser=umbrel -rpcpassword=umbrel createwallet "regtest_wallet" 2>/dev/null || \
+          bitcoin-cli -regtest -rpcuser=umbrel -rpcpassword=umbrel loadwallet "regtest_wallet" 2>/dev/null || true
+        bitcoin-cli -regtest -rpcuser=umbrel -rpcpassword=umbrel -rpcwallet=regtest_wallet -generate 101 >/dev/null 2>&1 || true
+        touch /data/.bitcoin/regtest/.ready
+        wait $$BITCOIND_PID
+    ports:
+      - "${BITCOIN_RPC_PORT:-18443}:18443"
+    volumes:
+      - "${LOCAL_APP_DATA_DIR:-./.umbrel-local/lawallet-nwc}/bitcoin:/data/.bitcoin"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /data/.bitcoin/regtest/.ready && bitcoin-cli -regtest -rpcuser=umbrel -rpcpassword=umbrel getblockchaininfo >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  lnd:
+    image: lightninglabs/lnd:v0.20.1-beta@sha256:f0a2bdc4b8bc89cb3b31b6e12d6b16ac5145defd916d8152cf0c1c07d8697cff
+    restart: unless-stopped
+    command:
+      - --bitcoin.active
+      - --bitcoin.regtest
+      - --bitcoin.node=bitcoind
+      - --bitcoind.rpchost=bitcoin:18443
+      - --bitcoind.rpcuser=umbrel
+      - --bitcoind.rpcpass=umbrel
+      - --bitcoind.zmqpubrawblock=tcp://bitcoin:28332
+      - --bitcoind.zmqpubrawtx=tcp://bitcoin:28333
+      - --rpclisten=0.0.0.0:10009
+      - --restlisten=0.0.0.0:8080
+      - --listen=0.0.0.0:9735
+      - --tlsextradomain=lnd
+      - --tlsextradomain=localhost
+      - --tlsextraip=127.0.0.1
+      - --noseedbackup
+      - --nobootstrap
+    ports:
+      - "${LND_GRPC_PORT:-10009}:10009"
+      - "${LND_REST_PORT:-18080}:8080"
+      - "${LND_P2P_PORT:-9735}:9735"
+    volumes:
+      - "${LOCAL_APP_DATA_DIR:-./.umbrel-local/lawallet-nwc}/lnd:/root/.lnd"
+    depends_on:
+      bitcoin:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "lncli --network=regtest --rpcserver=localhost:10009 --tlscertpath=/root/.lnd/tls.cert getinfo >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lawallet
+      POSTGRES_PASSWORD: "${APP_PASSWORD:-lawallet-local-password}"
+      POSTGRES_DB: lawallet
+    volumes:
+      - "${LOCAL_APP_DATA_DIR:-./.umbrel-local/lawallet-nwc}/postgres:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lawallet -d lawallet"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  lawallet-nwc:
+    image: masize/lawallet-nwc:1.0.0
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 2288
+      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD:-lawallet-local-password}@postgres:5432/lawallet"
+      JWT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}"
+    ports:
+      - "${LAWALLET_PORT:-2289}:2288"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS \"http://$$(hostname -i):2288/api/health\" >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
