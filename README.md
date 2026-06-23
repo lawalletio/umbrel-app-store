@@ -52,3 +52,9 @@ rm -rf .umbrel-local/lawallet-nwc
 Add this repository URL as a community app store in the umbrelOS UI, then install
 `LaWallet NWC`. The app installs directly from this store without requiring
 Alby Hub or any other Umbrel app to be installed first.
+
+## Release Automation
+
+LaWallet NWC releases can update this Umbrel package automatically through the
+multi-repository GitHub Actions flow documented in
+[docs/lawallet-nwc-release-automation.md](docs/lawallet-nwc-release-automation.md).
