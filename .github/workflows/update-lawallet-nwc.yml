@@ -64,8 +64,17 @@ jobs:
         env:
           VERSION: ${{ steps.package.outputs.version }}
           IMAGE: ${{ steps.package.outputs.image }}
+          SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+
+          SRC_REPO="${SOURCE_REPOSITORY:-lawalletio/lawallet-nwc}"
+          # Best-effort fetch of the published GitHub Release notes for this
+          # version. If the release (or token) is unavailable, RELEASE_BODY stays
+          # empty and the package falls back to a versioned pointer note.
+          RELEASE_BODY="$(gh release view "v${VERSION}" --repo "${SRC_REPO}" --json body --jq '.body' 2>/dev/null || true)"
+          export SRC_REPO RELEASE_BODY
 
           python3 <<'PY'
           import os
@@ -74,6 +83,8 @@ jobs:
 
           version = os.environ["VERSION"]
           image = os.environ["IMAGE"]
+          src_repo = os.environ.get("SRC_REPO") or "lawalletio/lawallet-nwc"
+          release_body = os.environ.get("RELEASE_BODY", "") or ""
 
           def replace_once(path, pattern, replacement):
               file_path = Path(path)
@@ -101,11 +112,62 @@ jobs:
               r"^(- Published image: `)masize/lawallet-nwc:[^`]+(`)$",
               lambda match: f"{match.group(1)}{image}{match.group(2)}",
           )
+
+          # Keep the Umbrel "update available" note in sync with the release.
+          # Distill the GitHub Release body into a concise note, falling back to
+          # a versioned pointer when the body is empty or just the changelog stub.
+          release_url = f"https://github.com/{src_repo}/releases/tag/v{version}"
+
+          text = re.sub(r"<!--.*?-->", "", release_body, flags=re.DOTALL)
+          kept = []
+          for line in text.splitlines():
+              stripped = line.strip()
+              if re.match(r"^#\s*v?\d", stripped):            # "# v1.2.3" title
+                  continue
+              if re.match(r"^##\s+release date\b", stripped, re.I):
+                  continue
+              if re.match(r"^\d{4}-\d{2}-\d{2}$", stripped):  # bare date line
+                  continue
+              kept.append(line.rstrip())
+          cleaned = re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+
+          is_stub = (not cleaned) or ("no merged prs" in cleaned.lower())
+          if is_stub:
+              note = f"LaWallet NWC {version}."
+          else:
+              limit = 1500
+              if len(cleaned) > limit:
+                  cleaned = cleaned[:limit].rstrip() + "…"
+              note = cleaned
+          note = f"{note}\n\nFull release notes: {release_url}"
+
+          # Literal block scalar (|-) preserves line breaks; every line is
+          # indented two spaces so arbitrary markdown can't break out of the
+          # YAML block. Replaces the whole releaseNotes block (key line through
+          # the line before the next top-level key, or EOF).
+          block = "releaseNotes: |-\n" + "\n".join(
+              (("  " + ln).rstrip() if ln else "") for ln in note.splitlines()
+          ) + "\n"
+
+          notes_path = Path("lawallet-nwc/umbrel-app.yml")
+          content = notes_path.read_text()
+          content, count = re.subn(
+              r"^releaseNotes:.*?(?=^\S|\Z)",
+              lambda _match: block,
+              content,
+              count=1,
+              flags=re.DOTALL | re.MULTILINE,
+          )
+          if count != 1:
+              raise SystemExit(f"Expected exactly one releaseNotes block, found {count}")
+          notes_path.write_text(content)
           PY
 
           grep -n 'version:' lawallet-nwc/umbrel-app.yml
           grep -RIn 'image: masize/lawallet-nwc:' lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
           grep -n 'Published image:' README.md
+          echo '--- releaseNotes ---'
+          sed -n '/^releaseNotes:/,$p' lawallet-nwc/umbrel-app.yml
 
       - name: Open and merge package update pull request
         env:
