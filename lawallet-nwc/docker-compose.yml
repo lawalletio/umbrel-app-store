@@ -8,7 +8,7 @@ services:
       PROXY_AUTH_ADD: "false"
 
   web:
-    image: masize/lawallet-nwc:1.0.0
+    image: masize/lawallet-nwc:1.0.2
     environment:
       NODE_ENV: production
       PORT: 2288
