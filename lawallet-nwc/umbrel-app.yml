@@ -26,8 +26,7 @@ defaultUsername: ""
 defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
-releaseNotes: >-
-  Initial Umbrel packaging for LaWallet NWC 1.0.0. The app runs the published
-  LaWallet web image, persists PostgreSQL data under the Umbrel app data
-  directory, opens directly to /admin, requires no external Umbrel app
-  dependencies, and exposes a Docker health check backed by /api/health.
+releaseNotes: |-
+  LaWallet NWC 1.0.7.
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v1.0.7
