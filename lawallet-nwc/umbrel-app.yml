@@ -16,8 +16,11 @@ repo: https://github.com/lawalletio/lawallet-nwc
 support: https://t.me/lacryptaok
 port: 2288
 gallery:
-  - https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/mobile-wallet-connect.png
-  - https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/images/onboarding-hero.jpg
+  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/1-lightning-address.jpg
+  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/2-all-in-one.jpg
+  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/3-users.jpg
+  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/4-card-designs.jpg
+  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/5-branding.jpg
 path: /admin/
 defaultUsername: ""
 defaultPassword: ""
