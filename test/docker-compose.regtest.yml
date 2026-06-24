@@ -88,7 +88,7 @@ services:
       retries: 20
 
   lawallet-nwc:
-    image: masize/lawallet-nwc:1.0.6
+    image: masize/lawallet-nwc:1.0.7
     restart: unless-stopped
     init: true
     environment:
