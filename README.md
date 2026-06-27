@@ -7,7 +7,7 @@ as an Umbrel community app.
 
 - App id: `lawallet-nwc`
 - App entrypoint: `/admin/`
-- Published image: `masize/lawallet-nwc:1.0.8`
+- Published image: `masize/lawallet-nwc:1.0.9`
 - Internal port: `2288`
 - Health check: `GET /api/health`
 - Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
