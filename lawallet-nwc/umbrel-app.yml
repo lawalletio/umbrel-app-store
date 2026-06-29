@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "1.0.9"
+version: "1.0.10"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,6 +27,6 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
-  LaWallet NWC 1.0.9.
+  LaWallet NWC 1.0.10.
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v1.0.9
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v1.0.10
