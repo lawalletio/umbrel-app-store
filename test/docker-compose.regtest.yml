@@ -96,6 +96,8 @@ services:
       PORT: 2288
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD:-lawallet-local-password}@postgres:5432/lawallet"
       JWT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}"
+      LISTENER_URL: "http://listener:4100"
+      LISTENER_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener"
     ports:
       - "${LAWALLET_PORT:-2289}:2288"
     depends_on:
@@ -107,3 +109,23 @@ services:
       timeout: 5s
       retries: 30
       start_period: 60s
+
+  listener:
+    image: masize/lawallet-nwc-listener:1.1.0
+    restart: unless-stopped
+    init: true
+    environment:
+      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD:-lawallet-local-password}@postgres:5432/lawallet"
+      LISTENER_PORT: 4100
+      LISTENER_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener"
+      WEB_ORIGIN: "http://lawallet-nwc:2288"
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4100/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
