@@ -14,6 +14,10 @@ services:
       PORT: 2288
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
       JWT_SECRET: "${APP_SEED}"
+      # NWC listener pairing — pre-wired so the integration works out of the
+      # box. The web app keeps working if the listener container is down.
+      LISTENER_URL: "http://lawallet-nwc_listener_1:4100"
+      LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,6 +30,27 @@ services:
       timeout: 10s
       retries: 5
       start_period: 90s
+
+  listener:
+    image: masize/lawallet-nwc-listener:1.1.0
+    environment:
+      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
+      LISTENER_PORT: 4100
+      LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
+      WEB_ORIGIN: "http://lawallet-nwc_web_1:2288"
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "on-failure"
+    stop_grace_period: "1m"
+    init: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4100/health >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   postgres:
     image: postgres:15-alpine
