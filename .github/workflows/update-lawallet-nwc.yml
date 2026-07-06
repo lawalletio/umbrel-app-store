@@ -13,6 +13,10 @@ on:
         description: "Full Docker image tag. Defaults to masize/lawallet-nwc:<version>."
         required: false
         type: string
+      listener_image:
+        description: "Full listener image tag. Defaults to masize/lawallet-nwc-listener:<version>."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -36,8 +40,10 @@ jobs:
         env:
           DISPATCH_VERSION: ${{ github.event.client_payload.version }}
           DISPATCH_IMAGE: ${{ github.event.client_payload.image }}
+          DISPATCH_LISTENER_IMAGE: ${{ github.event.client_payload.listener_image }}
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_IMAGE: ${{ inputs.image }}
+          INPUT_LISTENER_IMAGE: ${{ inputs.listener_image }}
         run: |
           set -euo pipefail
 
@@ -53,10 +59,16 @@ jobs:
             IMAGE="masize/lawallet-nwc:${VERSION}"
           fi
 
+          LISTENER_IMAGE="${DISPATCH_LISTENER_IMAGE:-${INPUT_LISTENER_IMAGE:-}}"
+          if [ -z "${LISTENER_IMAGE}" ]; then
+            LISTENER_IMAGE="masize/lawallet-nwc-listener:${VERSION}"
+          fi
+
           BRANCH_VERSION="$(printf "%s" "${VERSION}" | tr -cd "0-9A-Za-z._-")"
           {
             echo "version=${VERSION}"
             echo "image=${IMAGE}"
+            echo "listener_image=${LISTENER_IMAGE}"
             echo "branch=automation/lawallet-nwc-${BRANCH_VERSION}"
           } >> "${GITHUB_OUTPUT}"
 
@@ -64,6 +76,7 @@ jobs:
         env:
           VERSION: ${{ steps.package.outputs.version }}
           IMAGE: ${{ steps.package.outputs.image }}
+          LISTENER_IMAGE: ${{ steps.package.outputs.listener_image }}
           SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -83,6 +96,7 @@ jobs:
 
           version = os.environ["VERSION"]
           image = os.environ["IMAGE"]
+          listener_image = os.environ["LISTENER_IMAGE"]
           src_repo = os.environ.get("SRC_REPO") or "lawalletio/lawallet-nwc"
           release_body = os.environ.get("RELEASE_BODY", "") or ""
 
@@ -93,6 +107,17 @@ jobs:
               if count != 1:
                   raise SystemExit(f"Expected exactly one match in {path}, found {count}")
               file_path.write_text(updated)
+
+          def replace_optional(path, pattern, replacement):
+              # 0 or 1 matches: tolerates compose files that don't include the
+              # service yet (e.g. the listener before it lands in the package).
+              file_path = Path(path)
+              original = file_path.read_text()
+              updated, count = re.subn(pattern, replacement, original, count=1, flags=re.MULTILINE)
+              if count > 1:
+                  raise SystemExit(f"Expected at most one match in {path}, found {count}")
+              if count:
+                  file_path.write_text(updated)
 
           replace_once(
               "lawallet-nwc/umbrel-app.yml",
@@ -105,6 +130,11 @@ jobs:
                   compose_file,
                   r"^(\s+image:\s+)masize/lawallet-nwc:[^\s]+$",
                   lambda match: f"{match.group(1)}{image}",
+              )
+              replace_optional(
+                  compose_file,
+                  r"^(\s+image:\s+)masize/lawallet-nwc-listener:[^\s]+$",
+                  lambda match: f"{match.group(1)}{listener_image}",
               )
 
           replace_once(
@@ -164,7 +194,7 @@ jobs:
           PY
 
           grep -n 'version:' lawallet-nwc/umbrel-app.yml
-          grep -RIn 'image: masize/lawallet-nwc:' lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
+          grep -RIn 'image: masize/lawallet-nwc' lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
           grep -n 'Published image:' README.md
           echo '--- releaseNotes ---'
           sed -n '/^releaseNotes:/,$p' lawallet-nwc/umbrel-app.yml
