@@ -88,7 +88,7 @@ services:
       retries: 20
 
   lawallet-nwc:
-    image: masize/lawallet-nwc:1.1.0
+    image: masize/lawallet-nwc:1.1.1
     restart: unless-stopped
     init: true
     environment:
@@ -111,7 +111,7 @@ services:
       start_period: 60s
 
   listener:
-    image: masize/lawallet-nwc-listener:1.1.0
+    image: masize/lawallet-nwc-listener:1.1.1
     restart: unless-stopped
     init: true
     environment:
