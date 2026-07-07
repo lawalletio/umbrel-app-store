@@ -8,7 +8,7 @@ services:
       PROXY_AUTH_ADD: "false"
 
   web:
-    image: masize/lawallet-nwc:1.2.1
+    image: masize/lawallet-nwc:1.3.0
     environment:
       NODE_ENV: production
       PORT: 2288
@@ -32,7 +32,7 @@ services:
       start_period: 90s
 
   listener:
-    image: masize/lawallet-nwc-listener:1.2.1
+    image: masize/lawallet-nwc-listener:1.3.0
     environment:
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
       LISTENER_PORT: 4100
