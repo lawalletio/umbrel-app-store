@@ -27,9 +27,6 @@ Default local endpoints:
 
 - LaWallet admin: http://127.0.0.1:2289/admin
 - LaWallet health: http://127.0.0.1:2289/api/health
-- Bitcoin regtest RPC: `127.0.0.1:18443`, user `umbrel`, password `umbrel`
-- LND regtest gRPC: `127.0.0.1:10009`
-- LND regtest REST: `127.0.0.1:18080`
 
 Local state is written to `.umbrel-local/lawallet-nwc/` and ignored by git.
 
