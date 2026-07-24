@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "1.4.0"
+version: "2.0.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,6 +27,33 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
-  LaWallet NWC 1.4.0.
+  ## Summary
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v1.4.0
+  The first major release since the 1.0 line. Passkey login lands as a
+  first-class authentication method — and, unlike the interim design, derives
+  its Nostr key **client-side** from the WebAuthn PRF extension, so the server
+  never holds a user's secret. Accounts gained a real identity model: a single
+  account can now carry multiple Nostr pubkeys, with linking and merge flows.
+
+  Alongside that, this release consolidates everything shipped across v1.0.3 →
+  v1.4.0: the **NWC Listener** service (a standalone relay bridge with its own
+  admin dashboard, webhook delivery guarantees, and an optional fast path for
+  card payments), the **card system** (design editor, 3D preview, emulator,
+  spend history), **backup & restore**, an **installable PWA wallet**, and
+  first-class packaging for **Umbrel, Start9, Netlify, Coolify and Vercel**.
+
+  It also carries a fix for a defect that made card tap payments fail *every
+  time* — see [Cards](#cards).
+
+  ## Breaking changes
+
+  ### Passkey credentials from the server-custody scheme are deleted (#106)
+
+  The interim passkey design (#101) generated a **random** Nostr key per account
+  and held it server-side, encrypted under `KEY_VAULT_SECRET`. #106 replaced this
+  with deterministic client-side derivation: the WebAuthn PRF extension is
+  evaluated against a frozen app salt and run through HKDF-SHA256 to derive the
+  nsec in the browser. The same passkey therefore yields the same nsec on every
+  device it syncs to, and a passkey session becomes an ordinary nsec ses…
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.0.0
