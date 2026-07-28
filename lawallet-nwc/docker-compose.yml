@@ -12,7 +12,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 2288
-      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
+      # Umbrel attaches every app to a shared Docker network. Use the unique
+      # container hostname so another app's generic `postgres` alias cannot be
+      # selected by Docker DNS.
+      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@lawallet-nwc_postgres_1:5432/lawallet"
       JWT_SECRET: "${APP_SEED}"
       # NWC listener pairing — pre-wired so the integration works out of the
       # box. The web app keeps working if the listener container is down.
@@ -40,7 +43,7 @@ services:
   listener:
     image: masize/lawallet-nwc-listener:2.0.0
     environment:
-      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
+      DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@lawallet-nwc_postgres_1:5432/lawallet"
       LISTENER_PORT: 4100
       LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
       LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED}-listener-request-v1"

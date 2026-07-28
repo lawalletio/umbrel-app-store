@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_NAME="${PROJECT_NAME:-lawallet-nwc-local}"
 COMPOSE_FILE="${ROOT_DIR}/test/docker-compose.regtest.yml"
+UMBREL_COMPOSE_FILE="${ROOT_DIR}/lawallet-nwc/docker-compose.yml"
 
 export LOCAL_APP_DATA_DIR="${LOCAL_APP_DATA_DIR:-${ROOT_DIR}/.umbrel-local/lawallet-nwc}"
 export APP_SEED="${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}"
@@ -11,6 +12,14 @@ export APP_PASSWORD="${APP_PASSWORD:-lawallet-local-password}"
 export LAWALLET_PORT="${LAWALLET_PORT:-2289}"
 
 mkdir -p "${LOCAL_APP_DATA_DIR}"
+
+unique_postgres_host_count="$(
+  grep -c '@lawallet-nwc_postgres_1:5432/lawallet' "${UMBREL_COMPOSE_FILE}" || true
+)"
+if [[ "${unique_postgres_host_count}" -ne 2 ]]; then
+  echo "Umbrel web and listener must both use the app-unique Postgres hostname." >&2
+  exit 1
+fi
 
 docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" up --detach bitcoin lnd postgres lawallet-nwc listener
 
