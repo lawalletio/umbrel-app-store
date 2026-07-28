@@ -12,7 +12,7 @@ export LAWALLET_PORT="${LAWALLET_PORT:-2289}"
 
 mkdir -p "${LOCAL_APP_DATA_DIR}"
 
-docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" up --detach bitcoin lnd postgres lawallet-nwc
+docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" up --detach bitcoin lnd postgres lawallet-nwc listener
 
 lawallet_ready=false
 for attempt in $(seq 1 120); do
@@ -26,7 +26,23 @@ done
 
 if [[ "${lawallet_ready}" != "true" ]]; then
   echo "LaWallet health check did not pass in time." >&2
-  docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" logs --tail 200 postgres lawallet-nwc >&2
+  docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" logs --tail 200 postgres lawallet-nwc listener >&2
+  exit 1
+fi
+
+listener_ready=false
+for attempt in $(seq 1 60); do
+  if docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" exec -T listener \
+    curl -fsS http://localhost:4100/health >/dev/null 2>&1; then
+    listener_ready=true
+    break
+  fi
+  sleep 2
+done
+
+if [[ "${listener_ready}" != "true" ]]; then
+  echo "NWC listener health check did not pass in time." >&2
+  docker compose --project-name "${PROJECT_NAME}" --file "${COMPOSE_FILE}" logs --tail 200 listener >&2
   exit 1
 fi
 
@@ -52,6 +68,7 @@ if [[ "${lnd_ready}" != "true" ]]; then
 fi
 
 echo "LaWallet health check passed: ${response}"
+echo "NWC listener health check passed."
 echo "LND regtest check passed at block height ${lnd_block_height}."
 echo "Admin UI: http://127.0.0.1:${LAWALLET_PORT}/admin"
 echo "Bitcoin regtest RPC: 127.0.0.1:${BITCOIN_RPC_PORT:-18443} user=umbrel password=umbrel"

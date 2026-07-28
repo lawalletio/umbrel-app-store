@@ -18,6 +18,12 @@ services:
       # box. The web app keeps working if the listener container is down.
       LISTENER_URL: "http://lawallet-nwc_listener_1:4100"
       LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED}-listener-request-v1"
+      KEY_VAULT_SECRET: "${APP_SEED}-key-vault-v1"
+      # Encrypts every RemoteWallet NWC URI and the optional proxy credentials.
+      # Domain-separated from Umbrel's persistent per-app seed and shared only
+      # with the listener. The NIP-57 signer nsec is entered in Admin Settings.
+      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault-v1"
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,10 +43,15 @@ services:
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
       LISTENER_PORT: 4100
       LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED}-listener-request-v1"
+      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault-v1"
       WEB_ORIGIN: "http://lawallet-nwc_web_1:2288"
+      PROXY_RECONCILE_INTERVAL_MS: 600000
       NODE_ENV: production
     depends_on:
       postgres:
+        condition: service_healthy
+      web:
         condition: service_healthy
     restart: "on-failure"
     stop_grace_period: "1m"

@@ -142,6 +142,11 @@ jobs:
               r"^(- Published image: `)masize/lawallet-nwc:[^`]+(`)$",
               lambda match: f"{match.group(1)}{image}{match.group(2)}",
           )
+          replace_once(
+              "README.md",
+              r"^(- Listener image: `)masize/lawallet-nwc-listener:[^`]+(`)$",
+              lambda match: f"{match.group(1)}{listener_image}{match.group(2)}",
+          )
 
           # Keep the Umbrel "update available" note in sync with the release.
           # Distill the GitHub Release body into a concise note, falling back to
@@ -195,7 +200,7 @@ jobs:
 
           grep -n 'version:' lawallet-nwc/umbrel-app.yml
           grep -RIn 'image: masize/lawallet-nwc' lawallet-nwc/docker-compose.yml test/docker-compose.regtest.yml
-          grep -n 'Published image:' README.md
+          grep -nE '(Published|Listener) image:' README.md
           echo '--- releaseNotes ---'
           sed -n '/^releaseNotes:/,$p' lawallet-nwc/umbrel-app.yml
 
@@ -204,6 +209,7 @@ jobs:
           GH_TOKEN: ${{ secrets.UMBREL_APP_STORE_UPDATE_TOKEN }}
           VERSION: ${{ steps.package.outputs.version }}
           IMAGE: ${{ steps.package.outputs.image }}
+          LISTENER_IMAGE: ${{ steps.package.outputs.listener_image }}
           BRANCH: ${{ steps.package.outputs.branch }}
           SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
           SOURCE_RUN_URL: ${{ github.event.client_payload.source_run_url }}
@@ -235,6 +241,7 @@ jobs:
             echo
             echo "- Sets the Umbrel app version to ${VERSION}"
             echo "- Updates Docker image references to ${IMAGE}"
+            echo "- Updates the listener image reference to ${LISTENER_IMAGE}"
             echo "- Keeps the local regtest smoke stack on the same image tag"
             if [ -n "${SOURCE_REPOSITORY}" ]; then
               echo
@@ -267,4 +274,4 @@ jobs:
             --squash \
             --delete-branch \
             --subject "Update LaWallet NWC to ${VERSION}" \
-            --body "Automated Umbrel package update for ${IMAGE}."
+            --body "Automated Umbrel package update for ${IMAGE} and ${LISTENER_IMAGE}."

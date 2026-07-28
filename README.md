@@ -8,10 +8,20 @@ as an Umbrel community app.
 - App id: `lawallet-nwc`
 - App entrypoint: `/admin/`
 - Published image: `masize/lawallet-nwc:2.0.0`
+- Listener image: `masize/lawallet-nwc-listener:2.0.0`
 - Internal port: `2288`
 - Health check: `GET /api/health`
 - Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
 - Umbrel dependencies: none. Alby Hub is not required.
+
+Umbrel derives stable, domain-separated user-key vault, NWC vault, webhook, and
+listener-request secrets from its persistent per-app seed. Web and listener
+receive the matching values automatically, and the listener runs the deferred
+settlement recovery pass every ten minutes. The NWC vault encrypts all
+RemoteWallet NWC connection strings; the web startup migration automatically
+encrypts legacy plaintext rows before becoming ready. When the deferred proxy
+is used, its NIP-57 receipt signer is an `nsec` entered through LaWallet Admin
+Settings; it is never stored directly in the Umbrel environment.
 
 ## Local Smoke Test
 
