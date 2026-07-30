@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.2.0"
+version: "2.2.1"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -29,36 +29,8 @@ submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
   ## Summary
 
-  LaWallet NWC 2.2.0 lets a holder designate one card as their **MASTER
-  account-recovery card** and hardens the release pipeline against incomplete
-  deployment packages. The MASTER designation is enforced in the API and
-  PostgreSQL, follows the account rather than the physical card, and is visible
-  from the admin card list and detail page.
-
-  This release also closes the deployment-contract gap that allowed v2.1.0 to
-  publish before the Umbrel package supplied its required NWC vault key. Release
-  automation now checks the external Umbrel package before tagging or publishing
-  images.
-
   ## Highlights
 
-  ### MASTER account-recovery card (#125)
+  - fix(deploy): pin Umbrel persisted secret derivations (#128)
 
-  - Admins and cardholders can set or remove a MASTER card from the card list or
-    card detail page.
-  - Exactly one paired MASTER card is allowed per holder. Switching cards
-    demotes the previous MASTER before promoting the new one, and the database
-    enforces the invariant with a partial unique index.
-  - Activation, transfer, unpair, wipe, and rescue flows reset the designation
-    to `SIMPLE`, so MASTER status never travels with the physical card.
-  - Admin and owner-scoped card endpoints expose the designation, with updated
-    OpenAPI schemas and real-time card-list refreshes.
-  - This release ships the designation only. The recovery-share mechanism it
-    prepares remains scheduled for Month 7.
-
-  ### Deployment and release safety (#124)
-
-  - The release workflow now runs the deployment environment contract as a hard
-    gate before version bump, tag cr…
-
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.2.0
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.2.1
