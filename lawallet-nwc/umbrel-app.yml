@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.0.0"
+version: "2.1.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -29,31 +29,21 @@ submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
   ## Summary
 
-  The first major release since the 1.0 line. Passkey login lands as a
-  first-class authentication method — and, unlike the interim design, derives
-  its Nostr key **client-side** from the WebAuthn PRF extension, so the server
-  never holds a user's secret. Accounts gained a real identity model: a single
-  account can now carry multiple Nostr pubkeys, with linking and merge flows.
+  ## Highlights
 
-  Alongside that, this release consolidates everything shipped across v1.0.3 →
-  v1.4.0: the **NWC Listener** service (a standalone relay bridge with its own
-  admin dashboard, webhook delivery guarantees, and an optional fast path for
-  card payments), the **card system** (design editor, 3D preview, emulator,
-  spend history), **backup & restore**, an **installable PWA wallet**, and
-  first-class packaging for **Umbrel, Start9, Netlify, Coolify and Vercel**.
+  - refactor(admin): two-step login modal (method → options) (#122)
+  - feat(wallet): add full-screen claim Lightning address flow (#123)
+  - docs: translate roles and permissions guide (#121)
+  - Add deferred Lightning address proxy settlement (#120)
+  - fix(wallet): redirect /wallet/nostr-login to /wallet/signup (#118)
+  - fix(wallet): funnel login "Create an account" through the signup chooser (#119)
+  - refactor(wallet): rename /wallet/nostr-login to /wallet/signup (#117)
+  - feat(wallet): add landing "Try Wallet" button and split Nostr sign-in onto its own screen (#116)
+  - fix(docs): pin Vercel deploy config for apps/docs and declare its build env (#115)
+  - fix(tooling): load prettier config under "type": "module", then format the tree (#113)
+  - fix(cards): restrict card design imageUrl to http(s) schemes (#114)
+  - chore(pnpm): block dependency build scripts via dual-key policy (#112)
+  - fix(security): clear the Dependency Audit gate with self-retiring pins (#111)
+  - feat(wallet): scan card activation QRs in-app + LNURL-withdraw support (#109)
 
-  It also carries a fix for a defect that made card tap payments fail *every
-  time* — see [Cards](#cards).
-
-  ## Breaking changes
-
-  ### Passkey credentials from the server-custody scheme are deleted (#106)
-
-  The interim passkey design (#101) generated a **random** Nostr key per account
-  and held it server-side, encrypted under `KEY_VAULT_SECRET`. #106 replaced this
-  with deterministic client-side derivation: the WebAuthn PRF extension is
-  evaluated against a frozen app salt and run through HKDF-SHA256 to derive the
-  nsec in the browser. The same passkey therefore yields the same nsec on every
-  device it syncs to, and a passkey session becomes an ordinary nsec ses…
-
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.0.0
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.1.0
