@@ -198,6 +198,7 @@ jobs:
           grep -n 'Published image:' README.md
           echo '--- releaseNotes ---'
           sed -n '/^releaseNotes:/,$p' lawallet-nwc/umbrel-app.yml
+          bash scripts/verify-lawallet-nwc-secrets.sh
 
       - name: Open and merge package update pull request
         env:

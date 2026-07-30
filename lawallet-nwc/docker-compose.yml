@@ -18,15 +18,18 @@ services:
       # box. The web app keeps working if the listener container is down.
       LISTENER_URL: "http://lawallet-nwc_listener_1:4100"
       LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED}-listener-request-v1"
       # Encrypts RemoteWallet NWC connection strings, the settings-managed
       # LUD-16 proxy credentials and the NIP-57 receipt signer. Derived from the
       # app seed, domain-separated like LISTENER_AUTH_SECRET, so it is stable
       # across restarts and updates. Web and listener MUST agree on this value:
       # the envelopes are AES-256-GCM and only this exact secret decrypts them.
-      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault"
+      # Keep the v1 domain tag byte-for-byte stable. Existing ciphertext cannot
+      # be recovered if this derivation changes during an app update.
+      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault-v1"
       # Encrypts server-custodied Nostr keys created during passkey signup.
       # Without it the passkey signup path stays disabled.
-      KEY_VAULT_SECRET: "${APP_SEED}-key-vault"
+      KEY_VAULT_SECRET: "${APP_SEED}-key-vault-v1"
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,9 +49,10 @@ services:
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD}@postgres:5432/lawallet"
       LISTENER_PORT: 4100
       LISTENER_AUTH_SECRET: "${APP_SEED}-listener"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED}-listener-request-v1"
       # Must match the web service byte for byte — the listener decrypts the
       # NWC envelopes web wrote.
-      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault"
+      NWC_VAULT_SECRET: "${APP_SEED}-nwc-vault-v1"
       WEB_ORIGIN: "http://lawallet-nwc_web_1:2288"
       NODE_ENV: production
     depends_on:
