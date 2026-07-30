@@ -98,8 +98,9 @@ services:
       JWT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}"
       LISTENER_URL: "http://listener:4100"
       LISTENER_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener"
-      NWC_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-nwc-vault"
-      KEY_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-key-vault"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener-request-v1"
+      NWC_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-nwc-vault-v1"
+      KEY_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-key-vault-v1"
     ports:
       - "${LAWALLET_PORT:-2289}:2288"
     depends_on:
@@ -120,7 +121,8 @@ services:
       DATABASE_URL: "postgresql://lawallet:${APP_PASSWORD:-lawallet-local-password}@postgres:5432/lawallet"
       LISTENER_PORT: 4100
       LISTENER_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener"
-      NWC_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-nwc-vault"
+      LISTENER_REQUEST_AUTH_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-listener-request-v1"
+      NWC_VAULT_SECRET: "${APP_SEED:-lawallet-local-jwt-secret-at-least-32-chars}-nwc-vault-v1"
       WEB_ORIGIN: "http://lawallet-nwc:2288"
       NODE_ENV: production
     depends_on:
