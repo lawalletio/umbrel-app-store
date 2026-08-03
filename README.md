@@ -1,9 +1,8 @@
 # LaWallet Umbrel Community App Store
 
-This repository packages [LaWallet NWC](https://github.com/lawalletio/lawallet-nwc)
-as an Umbrel community app.
+This repository packages community apps for Umbrel.
 
-## App
+## LaWallet NWC
 
 - App id: `lawallet-nwc`
 - App entrypoint: `/admin/`
@@ -12,6 +11,14 @@ as an Umbrel community app.
 - Health check: `GET /api/health`
 - Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
 - Umbrel dependencies: none. Alby Hub is not required.
+
+## LNCurl
+
+- App id: `lncurl`
+- Published image: `ghcr.io/agustinkassis/lncurl:1.0.0`
+- Internal port: `3000`
+- Runtime data: SQLite persisted in `${APP_DATA_DIR}/data`
+- Umbrel dependencies: Alby Hub (`albyhub`)
 
 ## Local Smoke Test
 
@@ -47,8 +54,8 @@ rm -rf .umbrel-local/lawallet-nwc
 ## Using The Community App Store
 
 Add this repository URL as a community app store in the umbrelOS UI, then install
-`LaWallet NWC`. The app installs directly from this store without requiring
-Alby Hub or any other Umbrel app to be installed first.
+`LaWallet NWC` or `LNCurl`. LaWallet NWC has no app dependencies; LNCurl asks
+Umbrel to install Alby Hub first.
 
 ## Release Automation
 
