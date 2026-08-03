@@ -14,8 +14,8 @@ This repository packages community apps for Umbrel.
 
 ## LNCurl
 
-- App id: `lncurl`
-- Published image: `ghcr.io/agustinkassis/lncurl:1.0.0`
+- App id: `lawallet-lncurl`
+- Published image: `ghcr.io/agustinkassis/lncurl:1.0.1`
 - Internal port: `3000`
 - Runtime data: SQLite persisted in `${APP_DATA_DIR}/data`
 - Umbrel dependencies: Alby Hub (`albyhub`)
