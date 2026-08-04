@@ -3,7 +3,7 @@ id: lawallet-lncurl
 name: LNCurl
 tagline: Create isolated Lightning wallets with one curl
 category: bitcoin
-version: "1.0.5"
+version: "1.0.6"
 port: 59001
 icon: https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-lncurl/icon.png
 description: >-
