@@ -12,7 +12,7 @@ services:
 
   server:
     container_name: lawallet-lncurl_server_1
-    image: ghcr.io/agustinkassis/lncurl:1.0.4@sha256:ade0166c029b826f88a627204d452e42445d6a941676a1b28b818e55d862054c
+    image: ghcr.io/agustinkassis/lncurl:1.0.5@sha256:a290f69f25dbcff73a2b5c40dba85bd08eeef43bb8480e442a7c7b7120ba625b
     user: "1000:1000"
     volumes:
       - ${APP_DATA_DIR}/data:/data
