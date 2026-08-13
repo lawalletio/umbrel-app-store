@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.5.0"
+version: "2.5.1"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -31,6 +31,6 @@ releaseNotes: |-
 
   ## Highlights
 
-  - fix(forwarding): recover stranded payments, plus listener version and admin read-only wallets (#149)
+  - fix(release): stage every lockstep bump, not a hardcoded subset (#150)
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.5.0
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.5.1
