@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.4.0"
+version: "2.5.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -31,12 +31,6 @@ releaseNotes: |-
 
   ## Highlights
 
-  - feat(admin): link the bound remote wallet from the addresses list (#148)
-  - fix(security): scope rate-limit buckets, raise webhook cap, surface JWT errors (#147)
-  - fix(security): harden settings secrets, dev routes, JWT sessions, and webhook intake (#146)
-  - feat(observability): listener release health + deploy tracking for both projects (#145)
-  - fix(lud16): label LNURL text/identifier with the address domain, not the endpoint host (#141)
-  - chore(observability): remove temporary Sentry verification route (#144)
-  - feat(observability): optional Sentry monitoring for web + listener (#139)
+  - fix(forwarding): recover stranded payments, plus listener version and admin read-only wallets (#149)
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.4.0
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.5.0
