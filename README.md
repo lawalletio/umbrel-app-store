@@ -6,7 +6,7 @@ This repository packages community apps for Umbrel.
 
 - App id: `lawallet-nwc`
 - App entrypoint: `/admin/`
-- Published image: `masize/lawallet-nwc:2.5.1`
+- Published image: `masize/lawallet-nwc:2.6.0`
 - Internal port: `2288`
 - Health check: `GET /api/health`
 - Runtime data: PostgreSQL persisted in `${APP_DATA_DIR}/data/postgres`
