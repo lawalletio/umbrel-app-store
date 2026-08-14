@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.5.1"
+version: "2.6.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -31,6 +31,10 @@ releaseNotes: |-
 
   ## Highlights
 
-  - fix(release): stage every lockstep bump, not a hardcoded subset (#150)
+  - fix(examples): give the admin-provisioning tests their own vitest config (#155)
+  - docs: record the SDK as delivered and close the drift (#154)
+  - feat(sdk): @lawallet-nwc/sdk + @lawallet-nwc/react — nostr-first client SDK, hooks, onboarding example (#152)
+  - One Lightning Address input, everywhere: suggestions, avatars, caching (#153)
+  - fix(release): deploy the listener to Fly as part of the release (#151)
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.5.1
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.6.0
