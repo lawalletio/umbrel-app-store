@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.7.0"
+version: "2.7.1"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -29,34 +29,42 @@ submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
   ## Summary
 
-  Zap receipts now work with **every** NWC wallet. NIP-57 settlement used to
-  depend on the wallet pushing a `payment_received` notification, but
-  `notifications` is optional in NIP-47 — so a wallet that implements none left
-  every zap invoice `PENDING` and its `kind:9735` receipt unpublished, on an
-  address that advertised `allowsNostr`. The listener now ticks a sweep that asks
-  those wallets directly with `lookup_invoice` (#261), and first-time card
-  activation now binds a working wallet plus a one-time free Lightning Address
-  (#289).
+  Wallet receive and activity get the same receipt treatment as send, with a
+  live payment cue on incoming settlements. The listener image copies
+  `packages/shared/node_modules` so tsup can resolve its OpenAPI dependency at
+  build time. StartOS sideload and Community listings now share one `main` +
+  `db` layout; we document that, gate the owned package so it cannot regress,
+  and open Community-registry PRs instead of asking Start9 to pull our tree.
 
-  The other headline is **vouchers**: a coupon stash compatible with the
-  [lacrypta/coupons](https://github.com/lacrypta) protocol, so an operator can
-  hand out claimable value that lands in a user's wallet (#163).
+  ## Highlights
 
-  Beyond that this is a large hardening release — 87 merged PRs, most of them
-  fixes. A dedicated security pass closes a TOCTOU card-key leak, a pubkey
-  existence oracle, a cleartext bearer-token log, and several observability
-  leaks. Payment forwarding, BoltCards, webhook delivery, and the wallet UI each
-  got a round of correctness work.
+  ### Wallet
 
-  Two integrations were **removed**: the unused Alby Hub sub-account path and the
-  legacy `subdomain` setting. Both ship migrations — read the Breaking changes
-  section below before upgrading.
+  - Realtime payment cue and balance animation when a settlement lands (#298)
+  - Activity rows open on the same receive/send-style receipt as the live
+    flows (#296)
+  - Receive amount reuses send's currency switch (#297)
 
-  ## Breaking changes
+  ### Listener
 
-  ### The Alby Hub sub-account integration is gone (#262)
+  - Copy `packages/shared/node_modules` into the Docker build so the published
+    image can resolve `@asteasolutions/zod-to-openapi` (#291)
 
-  Courtesy wallets have been provisioned through LNCurl and stored as
-  `RemoteWallet` rows for several releases; the Alby Hub path was dead…
+  ### Start9
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.7.0
+  - Sideload `2.7.0:1` (and this wrap) uses Community's `main` + `db` volumes
+    and `withPgDump()` backups. Updating from sideload `2.7.0:0` copies
+    `main/postgresql/data` onto `db` once.
+  - `deploy:check` requires that layout on `lawalletio/lawallet-startos`.
+    `Start9-Community/lawallet-startos` stays advisory: registry builds are
+    made only from that fork, via PRs the sideload Release workflow opens.
+
+  ## Upgrading
+
+  Nothing to migrate in the app itself.
+
+  Start9 operators on sideload `2.7.0:0` should update to `2.7.0:1` or this
+  `2.7.1:0` package so Postgres moves onto `db`. Community-registry installs
+  wait for [Start9-Commun…
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.7.1
