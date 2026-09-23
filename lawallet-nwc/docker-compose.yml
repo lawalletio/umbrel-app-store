@@ -5,7 +5,12 @@ services:
     environment:
       APP_HOST: lawallet-nwc_web_1
       APP_PORT: 2288
-      PROXY_AUTH_ADD: "false"
+      PROXY_AUTH_ADD: "true"
+      # Machine clients have no Umbrel session. The gateway only supports
+      # exact paths and trailing wildcards, so BoltCard scan/callback cannot
+      # be listed without the rest of /api/cards. Those mutating routes still
+      # require LaWallet auth.
+      PROXY_AUTH_WHITELIST: "/.well-known/lnurlp/*,/.well-known/nostr.json,/.well-known/lawallet.json,/api/lud16/*,/api/cards/*"
 
   web:
     image: masize/lawallet-nwc:2.7.1
