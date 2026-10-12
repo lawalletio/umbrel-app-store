@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.7.2"
+version: "2.8.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,30 +27,31 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
+  ![LaWallet v2.8.0 — Faster. Steadier. Leaner.](https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/docs/changelogs/assets/v2.8.0.png)
+
   ## Summary
 
-  ## Highlights
+  This is a **stability and speed** release, driven by production data. A Sentry
+  triage of beta.lawallet.io turned up a crash that took down the wallet on
+  screen changes, plus a set of slow paths: a 4.3s wallet first paint, profile
+  lookups blocked on Nostr relays for seconds, and a listener tick that woke the
+  web app 129k times a month even when there was nothing to do.
 
-  - feat(wallet): open receive from home and simplify the send destination (#332)
-  - fix(wallet): give a new cardholder their first Lightning address free (#331)
-  - feat(wallet): let new cardholders start with a passkey or a Nostr key (#330)
-  - feat(wallet): celebrate LUD-03 claims with a synced chest animation (#328)
-  - feat(mcp): remote MCP server with OAuth 2.1 for AI agents (#317) (#327)
-  - fix(settings): only send the stored listener secret to the configured listener (#326)
-  - fix(wallet): replace dead courtesy LNCurl wallets before send or receive (#324)
-  - feat(wallet): lead new cardholders through a passkey into the wallet (#323)
-  - fix(cards): let owners rebind a card wallet from the Connection Map (#322)
-  - feat(cards): LUD-19 payLink for BoltCard top-up (#316)
-  - feat: BoltCard payLink and payer notes on send (#319)
-  - feat(wallet): charge the receive invoice from a BoltCard tap (#313)
-  - feat(wallet): simplify adding an NWC wallet (#314)
-  - feat(wallet): payment sound picker and keep JWT on aborted login (#312)
-  - fix(cards): drop the hardcoded 10000 sat BoltCard ceiling (#311)
-  - feat(web): persist wallet currency prefs on the user (#299)
-  - fix(wallet): bootstrap the account when creating a lightning address (#308)
-  - chore: remove dead BalanceHeader component and nwcStatusLabel helper (#305)
-  - chore: remove unused PrimaryActionButton component (#306)
-  - chore: remove requirePaidRegistration dead guard (#307)
-  - fix(ci): run sdk, react, listener, openapi a…
+  The crash came from **Chrome's page translation** rewriting text nodes that
+  React owns. On the next navigation React tried to move nodes that no longer
+  existed and the whole app fell back to "Something went wrong" (#333). The page
+  now opts out of translation, and every wallet and admin screen has its own
+  error boundary, so one failing screen no longer takes the app down (#335).
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.7.2
+  The rest is a performance pass across the stack, shipped as 14 focused PRs
+  (rolled up in #338 and #348):
+
+  - **A lighter, faster wallet start.** A valid session renders immediately and
+    is checked in the background, and the root JS bundle is 19% smaller (#347).
+  - **No more waiting on relays.** Profiles and NIP-05 serve what's cached and
+    refresh in the background (#341).
+  - **Leaner servers and database.** Fewer queries per request, cached settings,
+    new indexes, a sized connection pool, and a cheap cold start (#342, #345,
+  - **A faster payer path.** LUD-16 lookups drop unused quer…
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.8.0
