@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.8.0"
+version: "2.9.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,31 +27,33 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
-  ![LaWallet v2.8.0 — Faster. Steadier. Leaner.](https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/docs/changelogs/assets/v2.8.0.png)
-
   ## Summary
 
-  This is a **stability and speed** release, driven by production data. A Sentry
-  triage of beta.lawallet.io turned up a crash that took down the wallet on
-  screen changes, plus a set of slow paths: a 4.3s wallet first paint, profile
-  lookups blocked on Nostr relays for seconds, and a listener tick that woke the
-  web app 129k times a month even when there was nothing to do.
+  This release gets LaWallet ready for **native wallets and card holders**. The
+  iOS and Android apps can now use an instance's passkeys and open its links,
+  users can delete their account from inside an app, and a lost key is no longer
+  the end of an account: the holder's **NFC card** can recover it at the
+  point of sale (#373). Operators can make a member's **first Lightning Address
+  free** (#372) and mint device tokens for themselves (#374).
 
-  The crash came from **Chrome's page translation** rewriting text nodes that
-  React owns. On the next navigation React tried to move nodes that no longer
-  existed and the whole app fell back to "Something went wrong" (#333). The page
-  now opts out of translation, and every wallet and admin screen has its own
-  error boundary, so one failing screen no longer takes the app down (#335).
+  The wallet remembers who you paid: Lightning Address sends show the
+  recipient's avatar, name and note in Activity, and one tap pays them again
+  (#375). Wallet errors are now translated to Spanish (#357, #358), and passkey
+  registration on Android takes one prompt instead of two (#355).
 
-  The rest is a performance pass across the stack, shipped as 14 focused PRs
-  (rolled up in #338 and #348):
+  A second Sentry pass fixed the admin dashboard crash in the What's New dialog,
+  a timeout when refreshing many Nostr profiles, and 20-second waits on the
+  wallet balance (#378, #379). Payment and ledger failures that used to be only
+  logged now reach Sentry (#380). Everything runs on **Node 24.22.1**, which also
+  drops a compromised root certificate (#376).
 
-  - **A lighter, faster wallet start.** A valid session renders immediately and
-    is checked in the background, and the root JS bundle is 19% smaller (#347).
-  - **No more waiting on relays.** Profiles and NIP-05 serve what's cached and
-    refresh in the background (#341).
-  - **Leaner servers and database.** Fewer queries per request, cached settings,
-    new indexes, a sized connection pool, and a cheap cold start (#342, #345,
-  - **A faster payer path.** LUD-16 lookups drop unused quer…
+  ## Heads-up before upgrading
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.8.0
+  ### NIP-98 login only works from the configured `endpoint` (#364)
+
+  When the `endpoint` setting is filled in, Nostr (NIP-98) login is accepted only
+  from that exact origin. This closes a hole where a login signed for another
+  site could be replayed here. If you open your instance through a different
+  address, such as a LAN IP or `umbrel.local:<port>`, Nostr login fails with…
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.9.0
