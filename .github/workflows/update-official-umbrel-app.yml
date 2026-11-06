@@ -1,0 +1,462 @@
+name: Update Official Umbrel App
+
+on:
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [lawallet-nwc-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "LaWallet NWC version to submit, with or without a leading v"
+        required: false
+        type: string
+      image:
+        description: "Docker image tag. Defaults to masize/lawallet-nwc:<version>."
+        required: false
+        type: string
+      fork_repository:
+        description: "Fork used as PR head, for example agustinkassis/umbrel-apps."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: official-umbrel-lawallet-nwc-${{ github.event.client_payload.version || inputs.version || github.event.release.tag_name || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  update-official:
+    name: Open official Umbrel PR
+    runs-on: ubuntu-latest
+    env:
+      OFFICIAL_REPOSITORY: getumbrel/umbrel-apps
+      DEFAULT_FORK_REPOSITORY: agustinkassis/umbrel-apps
+      APP_ID: lawallet-nwc
+    steps:
+      - name: Checkout community app store
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: false
+
+      - name: Resolve release inputs
+        id: package
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          DISPATCH_IMAGE: ${{ github.event.client_payload.image }}
+          DISPATCH_SOURCE_REPOSITORY: ${{ github.event.client_payload.source_repository }}
+          DISPATCH_SOURCE_RUN_URL: ${{ github.event.client_payload.source_run_url }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_IMAGE: ${{ inputs.image }}
+          INPUT_FORK_REPOSITORY: ${{ inputs.fork_repository }}
+          CONFIG_FORK_REPOSITORY: ${{ vars.OFFICIAL_UMBREL_APPS_FORK }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${DISPATCH_VERSION:-${INPUT_VERSION:-${RELEASE_TAG:-}}}"
+          VERSION="${VERSION#v}"
+          if [ -z "${VERSION}" ]; then
+            echo "::error::Missing LaWallet NWC version."
+            exit 1
+          fi
+
+          IMAGE="${DISPATCH_IMAGE:-${INPUT_IMAGE:-}}"
+          if [ -z "${IMAGE}" ]; then
+            IMAGE="masize/lawallet-nwc:${VERSION}"
+          fi
+
+          FORK_REPOSITORY="${INPUT_FORK_REPOSITORY:-${CONFIG_FORK_REPOSITORY:-${DEFAULT_FORK_REPOSITORY}}}"
+          if ! printf "%s" "${FORK_REPOSITORY}" | grep -Eq '^[^/]+/[^/]+$'; then
+            echo "::error::Invalid fork repository '${FORK_REPOSITORY}'. Expected owner/repo."
+            exit 1
+          fi
+
+          BRANCH_VERSION="$(printf "%s" "${VERSION}" | tr -cd "0-9A-Za-z._-")"
+          FORK_OWNER="${FORK_REPOSITORY%%/*}"
+          SOURCE_REPOSITORY="${DISPATCH_SOURCE_REPOSITORY:-lawalletio/lawallet-nwc}"
+
+          {
+            echo "version=${VERSION}"
+            echo "image=${IMAGE}"
+            echo "branch=automation/official-lawallet-nwc-${BRANCH_VERSION}"
+            echo "fork_repository=${FORK_REPOSITORY}"
+            echo "fork_owner=${FORK_OWNER}"
+            echo "source_repository=${SOURCE_REPOSITORY}"
+            echo "source_run_url=${DISPATCH_SOURCE_RUN_URL}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Resolve and verify Docker image digest
+        id: image
+        env:
+          IMAGE: ${{ steps.package.outputs.image }}
+        run: |
+          set -euo pipefail
+
+          IMAGE_REF="${IMAGE%@*}"
+          INSPECT="$(docker buildx imagetools inspect "${IMAGE_REF}")"
+          printf "%s\n" "${INSPECT}"
+
+          if ! printf "%s\n" "${INSPECT}" | grep -Eq 'Platform:[[:space:]]+linux/amd64'; then
+            echo "::error::Image ${IMAGE_REF} does not advertise linux/amd64."
+            exit 1
+          fi
+
+          if ! printf "%s\n" "${INSPECT}" | grep -Eq 'Platform:[[:space:]]+linux/arm64'; then
+            echo "::error::Image ${IMAGE_REF} does not advertise linux/arm64."
+            exit 1
+          fi
+
+          DIGEST="$(printf "%s\n" "${INSPECT}" | awk '/^Digest:/ {print $2; exit}')"
+          if ! printf "%s" "${DIGEST}" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
+            echo "::error::Could not resolve a manifest-list digest for ${IMAGE_REF}."
+            exit 1
+          fi
+
+          if printf "%s" "${IMAGE}" | grep -Eq '@sha256:[0-9a-f]{64}$'; then
+            PINNED_IMAGE="${IMAGE}"
+          else
+            PINNED_IMAGE="${IMAGE_REF}@${DIGEST}"
+          fi
+
+          {
+            echo "digest=${DIGEST}"
+            echo "pinned_image=${PINNED_IMAGE}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout official Umbrel app store
+        env:
+          GH_TOKEN: ${{ secrets.OFFICIAL_UMBREL_APPS_TOKEN }}
+          BRANCH: ${{ steps.package.outputs.branch }}
+          FORK_REPOSITORY: ${{ steps.package.outputs.fork_repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::Missing OFFICIAL_UMBREL_APPS_TOKEN. Configure a token that can push to ${FORK_REPOSITORY} and open PRs against ${OFFICIAL_REPOSITORY}."
+            exit 1
+          fi
+
+          gh repo clone "${OFFICIAL_REPOSITORY}" official-umbrel-apps -- --depth 1
+          cd official-umbrel-apps
+          git checkout -B "${BRANCH}"
+          git remote add fork "https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY}.git"
+
+      - name: Prepare official package
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+          PINNED_IMAGE: ${{ steps.image.outputs.pinned_image }}
+          SOURCE_REPOSITORY: ${{ steps.package.outputs.source_repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_BODY="$(gh release view "v${VERSION}" --repo "${SOURCE_REPOSITORY}" --json body --jq '.body' 2>/dev/null || true)"
+          export RELEASE_BODY
+
+          cd official-umbrel-apps
+          python3 <<'PY'
+          import os
+          import re
+          import textwrap
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          pinned_image = os.environ["PINNED_IMAGE"]
+          source_repository = os.environ.get("SOURCE_REPOSITORY") or "lawalletio/lawallet-nwc"
+          release_body = os.environ.get("RELEASE_BODY", "") or ""
+
+          app_dir = Path("lawallet-nwc")
+          manifest_path = app_dir / "umbrel-app.yml"
+          compose_path = app_dir / "docker-compose.yml"
+          exports_path = app_dir / "exports.sh"
+          postgres_keep = app_dir / "data" / "postgres" / ".gitkeep"
+
+          def release_notes_block() -> str:
+              release_url = f"https://github.com/{source_repository}/releases/tag/v{version}"
+              text = re.sub(r"<!--.*?-->", "", release_body, flags=re.DOTALL)
+              kept = []
+              for line in text.splitlines():
+                  stripped = line.strip()
+                  if re.match(r"^#\s*v?\d", stripped):
+                      continue
+                  if re.match(r"^##\s+release date\b", stripped, re.I):
+                      continue
+                  if re.match(r"^\d{4}-\d{2}-\d{2}$", stripped):
+                      continue
+                  kept.append(line.rstrip())
+              cleaned = re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+              if (not cleaned) or ("no merged prs" in cleaned.lower()):
+                  note = f"LaWallet NWC {version}."
+              else:
+                  limit = 1500
+                  note = cleaned[:limit].rstrip() + ("..." if len(cleaned) > limit else "")
+              note = f"{note}\n\nFull release notes: {release_url}"
+              return "releaseNotes: |-\n" + "\n".join(
+                  (("  " + line).rstrip() if line else "") for line in note.splitlines()
+              ) + "\n"
+
+          def replace_once(path: Path, pattern: str, replacement) -> None:
+              original = path.read_text()
+              updated, count = re.subn(pattern, replacement, original, count=1, flags=re.MULTILINE)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one match in {path}, found {count}")
+              path.write_text(updated)
+
+          def replace_release_notes(path: Path) -> None:
+              content = path.read_text()
+              block = release_notes_block()
+              if re.search(r"^releaseNotes:", content, flags=re.MULTILINE):
+                  content, count = re.subn(
+                      r"^releaseNotes:.*?(?=^\S|\Z)",
+                      lambda _match: block,
+                      content,
+                      count=1,
+                      flags=re.DOTALL | re.MULTILINE,
+                  )
+                  if count != 1:
+                      raise SystemExit(f"Expected exactly one releaseNotes block in {path}, found {count}")
+              else:
+                  content = re.sub(
+                      r"^(description:.*?)(?=^\S)",
+                      lambda match: match.group(1) + block,
+                      content,
+                      count=1,
+                      flags=re.DOTALL | re.MULTILINE,
+                  )
+              path.write_text(content)
+
+          def write_new_package() -> None:
+              app_dir.mkdir(parents=True, exist_ok=True)
+              (app_dir / "data" / "postgres").mkdir(parents=True, exist_ok=True)
+              manifest = textwrap.dedent(f"""\
+                  manifestVersion: 1
+                  id: lawallet-nwc
+                  category: bitcoin
+                  name: LaWallet NWC
+                  version: "{version}"
+                  tagline: Lightning Address platform and Nostr CRM
+                  description: >-
+                    LaWallet NWC is an open-source platform for creating, managing, and serving Lightning Addresses connected through Nostr Wallet Connect (NWC).
+
+
+                    It includes an admin dashboard, user wallet, BoltCard fleet management, Lightning Address routing, and Nostr-based login.
+
+
+                    LaWallet NWC is pre-alpha software. Do not use it with real funds until you are comfortable with the risks.
+                  """)
+              manifest += release_notes_block()
+              manifest += textwrap.dedent("""\
+                  developer: La Crypta
+                  website: https://lawallet.io
+                  dependencies: []
+                  repo: https://github.com/lawalletio/lawallet-nwc
+                  support: https://t.me/lacryptaok
+
+                  port: 9877
+                  gallery: []
+                  path: "/admin"
+
+                  defaultUsername: ""
+                  defaultPassword: ""
+
+                  submitter: Agustin Kassis
+                  submission: https://github.com/getumbrel/umbrel-apps/pull/5801
+                  """)
+              manifest_path.write_text(manifest)
+              compose_path.write_text(textwrap.dedent(f"""\
+                  version: "3.7"
+
+                  services:
+                    app_proxy:
+                      environment:
+                        APP_HOST: lawallet-nwc_web_1
+                        APP_PORT: 2288
+                        PROXY_AUTH_ADD: "false"
+
+                    web:
+                      image: {pinned_image}
+                      environment:
+                        DATABASE_URL: postgresql://lawallet:${{APP_LAWALLET_NWC_POSTGRES_PASSWORD}}@postgres:5432/lawallet
+                        JWT_SECRET: ${{APP_LAWALLET_NWC_JWT_SECRET}}
+                        NODE_ENV: production
+                        PORT: 2288
+                        HOSTNAME: 0.0.0.0
+                      depends_on:
+                        postgres:
+                          condition: service_healthy
+                      restart: on-failure
+                      stop_grace_period: 1m
+                      init: true
+                      healthcheck:
+                        test: ["CMD-SHELL", "curl -f http://localhost:2288/api/health || exit 1"]
+                        interval: 10s
+                        timeout: 5s
+                        retries: 5
+                        start_period: 40s
+
+                    postgres:
+                      image: postgres:15-alpine@sha256:cd17e2ac98240fce1541ad2a803b34009b4eea5aec8a832363cdc7eca62e722e
+                      environment:
+                        POSTGRES_DB: lawallet
+                        POSTGRES_USER: lawallet
+                        POSTGRES_PASSWORD: ${{APP_LAWALLET_NWC_POSTGRES_PASSWORD}}
+                      volumes:
+                        - ${{APP_DATA_DIR}}/data/postgres:/var/lib/postgresql/data
+                      restart: on-failure
+                      healthcheck:
+                        test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+                        interval: 5s
+                        timeout: 5s
+                        retries: 10
+                  """))
+
+          if not manifest_path.exists():
+              write_new_package()
+          else:
+              replace_once(manifest_path, r"^version:\s*.*$", lambda _match: f'version: "{version}"')
+              replace_release_notes(manifest_path)
+              if not compose_path.exists():
+                  raise SystemExit(f"{compose_path} does not exist for existing package")
+              replace_once(
+                  compose_path,
+                  r"^(\s+image:\s+)(?:[\w./-]+/)?lawallet-nwc:[^\s]+(?:@sha256:[0-9a-f]{64})?$",
+                  lambda match: f"{match.group(1)}{pinned_image}",
+              )
+
+          if not exports_path.exists():
+              exports_path.write_text(
+                  'export APP_LAWALLET_NWC_POSTGRES_PASSWORD="$(derive_entropy "${app_entropy_identifier}-postgres-password")"\n'
+                  'export APP_LAWALLET_NWC_JWT_SECRET="$(derive_entropy "${app_entropy_identifier}-jwt-secret")"\n'
+              )
+          postgres_keep.parent.mkdir(parents=True, exist_ok=True)
+          postgres_keep.touch()
+          PY
+
+          sed -n '1,220p' lawallet-nwc/umbrel-app.yml
+          sed -n '1,220p' lawallet-nwc/docker-compose.yml
+
+      - name: Validate official package
+        run: |
+          set -euo pipefail
+          cd official-umbrel-apps
+          npm ci
+          npm run lint:apps -- lawallet-nwc --check-images
+          git add --intent-to-add lawallet-nwc
+          git diff --check -- lawallet-nwc
+          git reset -- lawallet-nwc
+
+      - name: Open draft pull request against official Umbrel apps
+        env:
+          GH_TOKEN: ${{ secrets.OFFICIAL_UMBREL_APPS_TOKEN }}
+          VERSION: ${{ steps.package.outputs.version }}
+          IMAGE: ${{ steps.package.outputs.image }}
+          PINNED_IMAGE: ${{ steps.image.outputs.pinned_image }}
+          BRANCH: ${{ steps.package.outputs.branch }}
+          FORK_REPOSITORY: ${{ steps.package.outputs.fork_repository }}
+          FORK_OWNER: ${{ steps.package.outputs.fork_owner }}
+          SOURCE_REPOSITORY: ${{ steps.package.outputs.source_repository }}
+          SOURCE_RUN_URL: ${{ steps.package.outputs.source_run_url }}
+        run: |
+          set -euo pipefail
+
+          cd official-umbrel-apps
+          if [ -z "$(git status --porcelain lawallet-nwc)" ]; then
+            echo "Official LaWallet NWC package is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lawallet-nwc
+          git commit -m "Update LaWallet NWC to ${VERSION}"
+          git push --force fork "HEAD:${BRANCH}"
+
+          BODY_FILE="$(mktemp)"
+          {
+            echo "## Type"
+            echo
+            echo "App update"
+            echo
+            echo "## App"
+            echo
+            echo "App ID: lawallet-nwc"
+            echo "Upstream project: https://github.com/${SOURCE_REPOSITORY}"
+            echo "Version: ${VERSION}"
+            echo
+            echo "## Summary"
+            echo
+            echo "Updates the official LaWallet NWC package for the ${VERSION} release."
+            echo
+            echo "- Updates the Umbrel app version to ${VERSION}"
+            echo "- Pins the runtime image to ${PINNED_IMAGE}"
+            echo "- Keeps the official package as a standalone app with no Umbrel app dependency"
+            echo
+            echo "## Verification"
+            echo
+            echo "Umbrel testing performed:"
+            echo
+            echo "Environment tested:"
+            echo "- [ ] Umbrel device"
+            echo "- [ ] Local umbrelOS test environment"
+            echo "- [x] Not runtime tested"
+            echo
+            echo "Architecture tested:"
+            echo "- [x] amd64"
+            echo "- [x] arm64"
+            echo
+            echo "Static checks performed:"
+            echo "- \`docker buildx imagetools inspect ${IMAGE}\`"
+            echo "- \`npm ci\`"
+            echo "- \`npm run lint:apps -- lawallet-nwc --check-images\`"
+            echo "- \`git diff --check\`"
+            echo
+            echo "Known lint warnings or caveats: none."
+            echo
+            echo "## Notes"
+            echo
+            echo "- Runtime Umbrel install testing is not performed by this automation, so this PR is opened as a draft."
+            echo "- LaWallet NWC uses public Lightning Address, Nostr discovery, BoltCard, wallet activation, and API endpoints; sensitive routes use LaWallet's own Nostr/JWT authorization."
+            echo "- No default Umbrel credentials are displayed; users authenticate through the app's Nostr/login flow."
+            if [ -n "${SOURCE_RUN_URL}" ]; then
+              echo "- Source run: ${SOURCE_RUN_URL}"
+            fi
+            echo "- Logo reference: https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/apps/web/public/logos/lawallet.svg"
+            echo "- Screenshot/source image references:"
+            echo "  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/1-lightning-address.jpg"
+            echo "  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/2-all-in-one.jpg"
+            echo "  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/3-users.jpg"
+            echo "  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/4-card-designs.jpg"
+            echo "  - https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-nwc/gallery/5-branding.jpg"
+          } > "${BODY_FILE}"
+
+          PR_NUMBER="$(gh pr list \
+            --repo "${OFFICIAL_REPOSITORY}" \
+            --head "${FORK_OWNER}:${BRANCH}" \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          if [ -n "${PR_NUMBER}" ]; then
+            gh pr edit "${PR_NUMBER}" \
+              --repo "${OFFICIAL_REPOSITORY}" \
+              --title "Update LaWallet NWC to ${VERSION}" \
+              --body-file "${BODY_FILE}"
+            gh pr ready "${PR_NUMBER}" --repo "${OFFICIAL_REPOSITORY}" --undo || true
+          else
+            gh pr create \
+              --repo "${OFFICIAL_REPOSITORY}" \
+              --base master \
+              --head "${FORK_OWNER}:${BRANCH}" \
+              --draft \
+              --title "Update LaWallet NWC to ${VERSION}" \
+              --body-file "${BODY_FILE}"
+          fi
+
+          gh pr list \
+            --repo "${OFFICIAL_REPOSITORY}" \
+            --head "${FORK_OWNER}:${BRANCH}" \
+            --json url \
+            --jq '.[0].url'

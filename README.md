@@ -62,3 +62,6 @@ Umbrel to install Alby Hub first.
 LaWallet NWC releases can update this Umbrel package automatically through the
 multi-repository GitHub Actions flow documented in
 [docs/lawallet-nwc-release-automation.md](docs/lawallet-nwc-release-automation.md).
+The same automation can also open a draft PR against
+`getumbrel/umbrel-apps` so the official Umbrel package can be reviewed and
+updated on every release.
