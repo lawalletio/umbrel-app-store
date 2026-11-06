@@ -1,11 +1,13 @@
 # LaWallet NWC Release Automation
 
 This document explains how LaWallet NWC releases update the Umbrel community
-app package automatically across two repositories:
+app package automatically and prepare the official Umbrel App Store PR across
+three repositories:
 
 - `lawalletio/lawallet-nwc`: builds and publishes the Docker image.
 - `lawalletio/umbrel-app-store`: updates the Umbrel package files and merges
-  the package bump.
+  the community package bump.
+- `getumbrel/umbrel-apps`: receives a draft PR for the official package update.
 
 ## Workflow Overview
 
@@ -33,8 +35,13 @@ app package automatically across two repositories:
 5. The app-store workflow opens or updates a package bump PR.
 6. The app-store workflow squash-merges that PR into `master`.
 7. The app-store workflow deletes the automation branch.
+8. `lawalletio/umbrel-app-store/.github/workflows/update-official-umbrel-app.yml`
+   verifies the published Docker image, prepares the official package in a
+   checkout of `getumbrel/umbrel-apps`, runs the official app linter, pushes a
+   branch to the configured fork, and opens or updates a draft PR against
+   `getumbrel/umbrel-apps`.
 
-The app-store workflow also supports manual runs with `workflow_dispatch`.
+Both app-store workflows also support manual runs with `workflow_dispatch`.
 
 ## Required Repository Secrets
 
@@ -80,13 +87,28 @@ Required secret:
 
 ```text
 UMBREL_APP_STORE_UPDATE_TOKEN=<same GitHub fine-grained PAT>
+OFFICIAL_UMBREL_APPS_TOKEN=<GitHub token that can push to the official-apps fork>
 ```
 
 `UMBREL_APP_STORE_UPDATE_TOKEN` lets the app-store workflow push the automation
 branch, open or update the package bump PR, squash-merge it, and delete the
 automation branch.
 
-Use the same GitHub token value for both:
+`OFFICIAL_UMBREL_APPS_TOKEN` lets the official updater push a branch to the fork
+used as the PR head and open a draft PR against `getumbrel/umbrel-apps`. The
+default fork is:
+
+```text
+agustinkassis/umbrel-apps
+```
+
+To use a different fork, configure this repository variable:
+
+```text
+OFFICIAL_UMBREL_APPS_FORK=<owner>/umbrel-apps
+```
+
+Use the same GitHub token value for the community update secrets:
 
 ```text
 lawalletio/lawallet-nwc:
@@ -96,9 +118,12 @@ lawalletio/umbrel-app-store:
   UMBREL_APP_STORE_UPDATE_TOKEN
 ```
 
+Use a separate token for `OFFICIAL_UMBREL_APPS_TOKEN` when the official-apps fork
+belongs to a different GitHub user or organization.
+
 ## Creating The GitHub Token
 
-Create one fine-grained personal access token:
+Create one fine-grained personal access token for the community package update:
 
 ```text
 GitHub
@@ -146,6 +171,17 @@ github_pat_...
 
 Use that full value as the value for both GitHub secrets listed above.
 
+For the official Umbrel PR workflow, create or reuse a token that can write to
+the configured fork of `getumbrel/umbrel-apps`. A classic token with
+`public_repo` is sufficient for a public fork. For a fine-grained token, give it
+access to the fork repository with:
+
+```text
+Contents: Read and write
+Pull requests: Read and write
+Metadata: Read-only
+```
+
 ## Setting Secrets With The GitHub CLI
 
 Set the dispatch secret in `lawalletio/lawallet-nwc`:
@@ -162,6 +198,22 @@ Set the update secret in `lawalletio/umbrel-app-store`:
 gh secret set UMBREL_APP_STORE_UPDATE_TOKEN \
   --repo lawalletio/umbrel-app-store \
   --body 'github_pat_...'
+```
+
+Set the official PR token in `lawalletio/umbrel-app-store`:
+
+```bash
+gh secret set OFFICIAL_UMBREL_APPS_TOKEN \
+  --repo lawalletio/umbrel-app-store \
+  --body 'github_pat_...'
+```
+
+Optionally change the fork used for official PR heads:
+
+```bash
+gh variable set OFFICIAL_UMBREL_APPS_FORK \
+  --repo lawalletio/umbrel-app-store \
+  --body 'agustinkassis/umbrel-apps'
 ```
 
 Set or rotate Docker Hub secrets in `lawalletio/lawallet-nwc`:
@@ -185,6 +237,11 @@ The app-store workflow therefore does not depend on the built-in
 `GITHUB_TOKEN` for write access. It checks out the repository with persisted
 credentials disabled and uses `UMBREL_APP_STORE_UPDATE_TOKEN` when it needs to
 push and merge.
+
+The official PR workflow also cannot use the built-in `GITHUB_TOKEN` because it
+must push to a fork and create a cross-repository PR against
+`getumbrel/umbrel-apps`. It uses `OFFICIAL_UMBREL_APPS_TOKEN` only for that
+cross-repository flow.
 
 ## Manual Test Paths
 
@@ -237,6 +294,39 @@ Expected result:
 3. The app-store updater runs.
 4. The app-store package update is merged into `master`.
 
+### Test The Official Umbrel PR Workflow
+
+In `lawalletio/umbrel-app-store`, open:
+
+```text
+Actions
+Update Official Umbrel App
+Run workflow
+```
+
+Use:
+
+```text
+version: 1.2.3
+image: masize/lawallet-nwc:1.2.3
+fork_repository: agustinkassis/umbrel-apps
+```
+
+Expected result:
+
+1. Workflow verifies the Docker image is multi-arch for `linux/amd64` and
+   `linux/arm64`.
+2. Workflow prepares `lawallet-nwc` in a fresh checkout of
+   `getumbrel/umbrel-apps`.
+3. Workflow runs `npm run lint:apps -- lawallet-nwc --check-images` and
+   `git diff --check`.
+4. Workflow pushes `automation/official-lawallet-nwc-<version>` to the fork.
+5. Workflow opens or updates a draft PR against `getumbrel/umbrel-apps`.
+
+The official PR is intentionally not merged automatically. Umbrel maintainers
+still need to review it and runtime testing should be added before marking it
+ready.
+
 ## Publishing A Normal Release
 
 The normal release path is:
@@ -257,6 +347,10 @@ The normal release path is:
    version: "1.2.3"
    image: masize/lawallet-nwc:1.2.3
    ```
+
+5. The official app PR workflow prepares the official package with the same app
+   version and the Docker image pinned to the resolved multi-architecture
+   manifest digest, then opens a draft PR against `getumbrel/umbrel-apps`.
 
 ## Branches And Pull Requests
 
