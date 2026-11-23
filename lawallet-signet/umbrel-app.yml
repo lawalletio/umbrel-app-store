@@ -1,0 +1,39 @@
+manifestVersion: 1.1
+id: lawallet-signet
+name: Signet Node + SP
+tagline: Signet Bitcoin Core, Fulcrum and a silent payments Electrum server
+category: bitcoin
+version: "1.0.0"
+port: 2352
+icon: https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-signet/icon.svg
+description: >-
+  A self-contained signet stack for development: Bitcoin Core on signet (with the
+  Umbrel Bitcoin Node dashboard), Fulcrum, and Frigate, an Electrum server that adds
+  BIP352 silent payments scanning (blockchain.silentpayments.subscribe) and proxies
+  every other Electrum call to Fulcrum.
+
+
+  Electrum (TCP, with silent payments): <your-umbrel>:60001
+
+
+  Fully isolated from your mainnet Bitcoin Node, Fulcrum and Electrs: its own data,
+  RPC credentials and ports, and it never registers as an Electrum backend for other
+  apps. The node is pinned to signet; changing the network in the dashboard will not
+  start a mainnet sync.
+developer: La Crypta
+website: https://github.com/sparrowwallet/frigate
+submitter: Agustin Kassis
+repo: https://github.com/lawalletio/umbrel-app-store
+support: https://t.me/lacryptaok
+gallery: []
+dependencies: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+releaseNotes: ""
+backupIgnore:
+  - data/bitcoin/signet/blocks
+  - data/bitcoin/signet/chainstate
+  - data/bitcoin/signet/indexes
+  - data/fulcrum
+  - data/frigate

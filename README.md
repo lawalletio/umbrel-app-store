@@ -20,6 +20,22 @@ This repository packages community apps for Umbrel.
 - Runtime data: SQLite persisted in `${APP_DATA_DIR}/data`
 - Umbrel dependencies: Alby Hub (`albyhub`)
 
+## Signet Node + SP
+
+- App id: `lawallet-signet`
+- Services: Bitcoin Core signet with the Umbrel Bitcoin Node dashboard, Fulcrum, and
+  [Frigate](https://github.com/sparrowwallet/frigate) for BIP352 silent payments
+- Images: `ghcr.io/getumbrel/umbrel-bitcoin`, `cculianu/fulcrum`, `masize/frigate`
+  (built from `images/frigate/`)
+- Ports: dashboard `2352`, Electrum + silent payments TCP `60001`. RPC, ZMQ and
+  Fulcrum stay internal.
+- Isolation: no `exports.sh`, no `implements: electrs`, `signet-` prefixed services
+  addressed by container name on Umbrel's shared network, and bitcoind pinned with
+  `-chain=signet`
+- Umbrel dependencies: none
+- Local smoke test: `./scripts/smoke-signet.sh` (checks wiring only; Electrum answers
+  once the chain has synced)
+
 ## Local Smoke Test
 
 Run the app with local Postgres, Bitcoin Core regtest, and LND regtest:

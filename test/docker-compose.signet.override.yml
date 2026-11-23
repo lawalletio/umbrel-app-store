@@ -1,0 +1,22 @@
+# Runs lawallet-signet/docker-compose.yml outside Umbrel:
+#   docker compose -f lawallet-signet/docker-compose.yml -f test/docker-compose.signet.override.yml up -d
+# Adds what umbreld normally injects: container names, the shared network, and the UI port.
+services:
+  app_proxy:
+    image: busybox
+    profiles: ["umbrel-only"]
+  signet-bitcoind:
+    container_name: lawallet-signet_signet-bitcoind_1
+    ports:
+      - "${SIGNET_UI_PORT:-2352}:3000"
+  signet-fulcrum:
+    container_name: lawallet-signet_signet-fulcrum_1
+  signet-frigate:
+    container_name: lawallet-signet_signet-frigate_1
+    image: ${FRIGATE_IMAGE:-masize/frigate:1.6.1}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${NETWORK_IP:-10.99.0.0}/16
