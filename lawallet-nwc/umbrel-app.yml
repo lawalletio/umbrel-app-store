@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.9.0"
+version: "2.10.0"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,33 +27,31 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
+  ![LaWallet v2.10.0 — Email. Swaps. Faster.](https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/docs/changelogs/assets/v2.10.0.png)
+
   ## Summary
 
-  This release gets LaWallet ready for **native wallets and card holders**. The
-  iOS and Android apps can now use an instance's passkeys and open its links,
-  users can delete their account from inside an app, and a lost key is no longer
-  the end of an account: the holder's **NFC card** can recover it at the
-  point of sale (#373). Operators can make a member's **first Lightning Address
-  free** (#372) and mint device tokens for themselves (#374).
+  Members can now **sign in with just an email address** (#401). An unknown
+  address gets a new account with a server-held key, a known one signs in, and
+  the claim dialog on the landing page offers every login method and picks the
+  claim back up after the magic link (#403). Operators configure SMTP, AWS SES or
+  Resend side by side under Settings ▸ Infrastructure ▸ Email.
 
-  The wallet remembers who you paid: Lightning Address sends show the
-  recipient's avatar, name and note in Activity, and one tap pays them again
-  (#375). Wallet errors are now translated to Spanish (#357, #358), and passkey
-  registration on Android takes one prompt instead of two (#355).
+  **Integrations and swaps** arrive (#404, #405): with Bull Bitcoin or Wapu
+  enabled, any user can sell sats for Argentine pesos paid to a CBU, CVU or alias.
+  A three-step wizard quotes each provider, a status cron follows every order to
+  the end, and completed Bull Bitcoin orders get a PDF receipt. Admins also get a
+  **Tools** page with a Lightning invoice lookup (#406) and **preference polls**
+  that users answer from the wallet (#408).
 
-  A second Sentry pass fixed the admin dashboard crash in the What's New dialog,
-  a timeout when refreshing many Nostr profiles, and 20-second waits on the
-  wallet balance (#378, #379). Payment and ledger failures that used to be only
-  logged now reach Sentry (#380). Everything runs on **Node 24.22.1**, which also
-  drops a compromised root certificate (#376).
+  MCP apps can be limited to **chosen wallets** per connection (#409), and Claude
+  Code and other MCP clients no longer lose their session on token refresh
+  (#415, #420).
 
-  ## Heads-up before upgrading
+  The wallet opens instantly from its **last session** and shows an "Offline
+  mode" badge when the API can't be reached (#383). Card taps answer the
+  terminal as soon as the balance covers the invoice (#385, #388). A wallet that
+  may hold funds is never archived automatically again (#389). A performance pass
+  cut database round-trips on payment and balance paths, added miss…
 
-  ### NIP-98 login only works from the configured `endpoint` (#364)
-
-  When the `endpoint` setting is filled in, Nostr (NIP-98) login is accepted only
-  from that exact origin. This closes a hole where a login signed for another
-  site could be replayed here. If you open your instance through a different
-  address, such as a LAN IP or `umbrel.local:<port>`, Nostr login fails with…
-
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.9.0
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.10.0
