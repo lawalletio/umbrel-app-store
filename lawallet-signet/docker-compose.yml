@@ -66,7 +66,7 @@ services:
       SUBNETS_TO_EXCLUDE_FROM_PER_IP_LIMITS: "127.0.0.1/8,${NETWORK_IP}/16"
 
   signet-frigate:
-    image: masize/frigate:1.6.1
+    image: masize/frigate:1.6.1@sha256:48ab1dcacda932a13d586905eb052083afea968dc2ceac4b77708ba2bc8caccf
     user: "1000:1000"
     restart: on-failure
     stop_grace_period: 1m
