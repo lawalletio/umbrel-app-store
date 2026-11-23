@@ -1,0 +1,87 @@
+version: "3.7"
+
+# Every Umbrel app shares one Docker network (umbrel_main_network), so service
+# names are DNS aliases visible to all apps. Services here are prefixed with
+# "signet-" and referenced by their unique container names, so nothing resolves
+# to (or is resolved by) the mainnet bitcoin/fulcrum/electrs apps.
+# No exports.sh and no `implements: electrs`: other apps never see this node.
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: lawallet-signet_signet-bitcoind_1
+      APP_PORT: 3000
+
+  signet-bitcoind:
+    # Umbrel's own Bitcoin Node image (Core + dashboard), same digest as the official app.
+    image: ghcr.io/getumbrel/umbrel-bitcoin:v1.5.0@sha256:2bf5f6c1612abcbd050bef98f839ee3489f589bb46fbb50fd5f0340d9cc1bd3c
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 15m30s
+    mem_limit: 1536m
+    # Seed settings.json on first start only; after that the dashboard owns it.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        mkdir -p /data/app /data/bitcoin
+        [ -f /data/app/settings.json ] || echo '{"chain":"signet","onlynet":["clearnet"],"listen":[],"dbcache":300,"maxmempool":100}' > /data/app/settings.json
+        exec docker-entrypoint.sh node dist/server.js
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    environment:
+      # CLI -chain overrides whatever the dashboard writes to bitcoin.conf, so a
+      # network switch in the UI can never start a mainnet sync and fill the disk.
+      BITCOIND_EXTRA_ARGS: "-chain=signet"
+      APPS_SUBNET: "${NETWORK_IP}/16"
+      BITCOIND_IP: "0.0.0.0"
+      P2P_PORT: "38333"
+      RPC_PORT: "38332"
+      RPC_USER: "signet"
+      RPC_PASS: "${APP_PASSWORD}"
+      DEVICE_DOMAIN_NAME: "${DEVICE_DOMAIN_NAME}"
+      # ZMQ stays on the image defaults (28332-28336) inside this container only.
+
+  signet-fulcrum:
+    image: cculianu/fulcrum:v2.1.4@sha256:3de5dc10d6fd331a61adf54bc238bc01d1fc9618f2f763e2454e21b4e6d888b1
+    init: true
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 5m
+    mem_limit: 768m
+    depends_on:
+      - signet-bitcoind
+    command: ["Fulcrum", "_ENV_"]
+    volumes:
+      - ${APP_DATA_DIR}/data/fulcrum:/data
+    environment:
+      DATA_DIR: /data
+      TCP: 0.0.0.0:50001 # internal only: Frigate is the public face
+      BITCOIND: lawallet-signet_signet-bitcoind_1:38332
+      RPCUSER: signet
+      RPCPASSWORD: "${APP_PASSWORD}"
+      PEERING: "false"
+      ANNOUNCE: "false"
+      DB_MEM: "256"
+      # Frigate proxies every wallet session from its own IP; don't per-IP limit it.
+      SUBNETS_TO_EXCLUDE_FROM_PER_IP_LIMITS: "127.0.0.1/8,${NETWORK_IP}/16"
+
+  signet-frigate:
+    image: masize/frigate:1.6.1@sha256:48ab1dcacda932a13d586905eb052083afea968dc2ceac4b77708ba2bc8caccf
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 1m
+    mem_limit: 1280m
+    depends_on:
+      - signet-bitcoind
+      - signet-fulcrum
+    ports:
+      - "60001:60001"
+    volumes:
+      - ${APP_DATA_DIR}/data/frigate:/data
+    environment:
+      BITCOIND_RPC_URL: http://lawallet-signet_signet-bitcoind_1:38332
+      BITCOIND_RPC_AUTH: "signet:${APP_PASSWORD}"
+      BITCOIND_ZMQ_SEQUENCE: tcp://lawallet-signet_signet-bitcoind_1:28335
+      BACKEND_ELECTRUM_SERVER: tcp://lawallet-signet_signet-fulcrum_1:50001
+      FRIGATE_TCP: tcp://0.0.0.0:60001
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50"

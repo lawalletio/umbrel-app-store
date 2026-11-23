@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Starts lawallet-signet locally and checks every service is up and wired:
+# dashboard answers, bitcoind runs signet, Fulcrum and Frigate authenticate to RPC.
+# Full Electrum checks need a synced chain; run those on the Umbrel (see PR notes).
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export APP_DATA_DIR="${APP_DATA_DIR:-${ROOT_DIR}/.umbrel-local/lawallet-signet}"
+export APP_PASSWORD="${APP_PASSWORD:-signet-local-password}"
+export NETWORK_IP="${NETWORK_IP:-10.99.0.0}"
+export DEVICE_DOMAIN_NAME="${DEVICE_DOMAIN_NAME:-localhost}"
+export SIGNET_UI_PORT="${SIGNET_UI_PORT:-2352}"
+compose=(docker compose --project-name lawallet-signet
+  -f "${ROOT_DIR}/lawallet-signet/docker-compose.yml"
+  -f "${ROOT_DIR}/test/docker-compose.signet.override.yml")
+
+mkdir -p "${APP_DATA_DIR}"
+cp -Rn "${ROOT_DIR}/lawallet-signet/data" "${APP_DATA_DIR}/" 2>/dev/null || true
+"${compose[@]}" up -d
+
+wait_for() { # description, command...
+  local what="$1"; shift
+  for _ in $(seq 1 90); do "$@" >/dev/null 2>&1 && { echo "ok: ${what}"; return 0; }; sleep 2; done
+  echo "FAIL: ${what}" >&2; "${compose[@]}" logs --tail 60 >&2; exit 1
+}
+logs_have() { "${compose[@]}" logs "$1" 2>&1 | grep -q "$2"; }
+is_signet() {
+  "${compose[@]}" exec -T signet-bitcoind bitcoin-cli -signet -rpcport=38332 -rpcuser=signet \
+    -rpcpassword="${APP_PASSWORD}" getblockchaininfo | grep -q '"chain": "signet"'
+}
+
+wait_for "dashboard on :${SIGNET_UI_PORT}" curl -fsS "http://127.0.0.1:${SIGNET_UI_PORT}/"
+wait_for "bitcoind chain=signet" is_signet
+wait_for "fulcrum reached bitcoind RPC" logs_have signet-fulcrum "bitcoind is still downloading headers\|Block height"
+wait_for "frigate reached bitcoind RPC" logs_have signet-frigate "Waiting for sync\|ndex"
+echo "smoke ok. Stop with: ${compose[*]} down"
