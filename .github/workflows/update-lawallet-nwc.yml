@@ -72,6 +72,9 @@ jobs:
             echo "branch=automation/lawallet-nwc-${BRANCH_VERSION}"
           } >> "${GITHUB_OUTPUT}"
 
+      - name: Keep the currently published package for the upgrade test
+        run: cp lawallet-nwc/docker-compose.yml "${RUNNER_TEMP}/previous-docker-compose.yml"
+
       - name: Update package files
         env:
           VERSION: ${{ steps.package.outputs.version }}
@@ -199,6 +202,12 @@ jobs:
           echo '--- releaseNotes ---'
           sed -n '/^releaseNotes:/,$p' lawallet-nwc/umbrel-app.yml
           bash scripts/verify-lawallet-nwc-secrets.sh
+
+      # Publishing = merging to master, which every Umbrel node then offers as
+      # an update. Boot the real package under umbrelOS conditions first,
+      # upgrading from the published one, and stop here if it is not healthy.
+      - name: Smoke test the package before publishing
+        run: bash scripts/smoke-umbrel-package.sh "${RUNNER_TEMP}/previous-docker-compose.yml"
 
       - name: Open and merge package update pull request
         env:

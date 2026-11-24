@@ -1,0 +1,34 @@
+name: Smoke LaWallet NWC package
+
+# Hand edits to the package get the same check the release update runs before
+# it publishes: boot the real compose under umbrelOS conditions, upgrading from
+# the package on the base branch.
+on:
+  pull_request:
+    paths:
+      - "lawallet-nwc/**"
+      - "scripts/smoke-umbrel-package.sh"
+      - ".github/workflows/smoke-lawallet-nwc.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Boot the package like umbrelOS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Smoke test (upgrade from the base branch package)
+        env:
+          BASE_REF: ${{ github.base_ref || 'master' }}
+        run: |
+          set -euo pipefail
+          git show "origin/${BASE_REF}:lawallet-nwc/docker-compose.yml" > "${RUNNER_TEMP}/previous-docker-compose.yml"
+          bash scripts/smoke-umbrel-package.sh "${RUNNER_TEMP}/previous-docker-compose.yml"
