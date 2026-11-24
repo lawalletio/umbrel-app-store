@@ -50,7 +50,8 @@
   // Status = the most recent milestone in Frigate's log since its last start.
   const STATES = [
     [/Electrum server listening/, "Ready", "#3fb950"],
-    [/Waiting for sync/, "Waiting for the node to finish syncing", "#d29922"],
+    [/Indexing progress/, "Indexing silent payments", "#58a6ff"],
+    [/Waiting for sync/,"Waiting for the node to finish syncing", "#d29922"],
     [/ERROR/, "Error (see line below)", "#f85149"],
   ];
   async function refresh() {
