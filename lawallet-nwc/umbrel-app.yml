@@ -2,7 +2,7 @@ manifestVersion: 1
 id: lawallet-nwc
 category: bitcoin
 name: LaWallet NWC
-version: "2.10.0"
+version: "2.10.1"
 tagline: Lightning Address platform and Nostr CRM
 icon: https://github.com/lawalletio/lawallet-nwc/blob/main/apps/web/public/logos/lawallet-iso.png?raw=true
 description: >-
@@ -27,31 +27,39 @@ defaultPassword: ""
 submitter: Agustin Kassis
 submission: https://github.com/getumbrel/umbrel/pull/566
 releaseNotes: |-
-  ![LaWallet v2.10.0 — Email. Swaps. Faster.](https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/docs/changelogs/assets/v2.10.0.png)
+  ![LaWallet v2.10.1 — Umbrel. Fixed. Guarded.](https://raw.githubusercontent.com/lawalletio/lawallet-nwc/main/docs/changelogs/assets/v2.10.1.png)
 
   ## Summary
 
-  Members can now **sign in with just an email address** (#401). An unknown
-  address gets a new account with a server-held key, a known one signs in, and
-  the claim dialog on the landing page offers every login method and picks the
-  claim back up after the magic link (#403). Operators configure SMTP, AWS SES or
-  Resend side by side under Settings ▸ Infrastructure ▸ Email.
+  A fix for Umbrel nodes that also run another app with a database service
+  named `postgres`, such as **BTCPay Server**. After updating to 2.10.0 those
+  nodes answered every page with `Internal Server Error`.
 
-  **Integrations and swaps** arrive (#404, #405): with Bull Bitcoin or Wapu
-  enabled, any user can sell sats for Argentine pesos paid to a CBU, CVU or alias.
-  A three-step wizard quotes each provider, a status cron follows every order to
-  the end, and completed Bull Bitcoin orders get a PDF receipt. Admins also get a
-  **Tools** page with a Lightning invoice lookup (#406) and **preference polls**
-  that users answer from the wallet (#408).
+  Every Umbrel app shares one Docker network, so the package's bare `postgres`
+  host also resolved to the other app's database, and Docker DNS alternated
+  between the two. Any connection that landed on the wrong one failed with
+  `role "lawallet" does not exist`. When that happened during startup, the web
+  app could not serve anything. The bug was in the package all along; the
+  2.10.0 update only exposed it by restarting the app.
 
-  MCP apps can be limited to **chosen wallets** per connection (#409), and Claude
-  Code and other MCP clients no longer lose their session on token refresh
-  (#415, #420).
+  The Umbrel package now reaches its database by its own container name,
+  `lawallet-nwc_postgres_1`, as it already did for the listener
+  (lawalletio/umbrel-app-store#61). The release gate now fails if the package
+  ever goes back to the shared name.
 
-  The wallet opens instantly from its **last session** and shows an "Offline
-  mode" badge when the API can't be reached (#383). Card taps answer the
-  terminal as soon as the balance covers the invoice (#385, #388). A wallet that
-  may hold funds is never archived automatically again (#389). A performance pass
-  cut database round-trips on payment and balance paths, added miss…
+  There are no app code changes. On Docker, StartOS and Vercel, 2.10.1 is the
+  same as 2.10.0.
 
-  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.10.0
+  ## Highlights
+
+  ### Deployment
+
+  - fix(umbrel): reach Postgres by its container name, not the shared `postgres` alias (lawalletio/umbrel-app-store#61)
+  - chore(deploy-check): fail the release if the Umbrel package uses the shared `postgres` host
+
+  ## Upgrading
+
+  Update from the Umbrel App Store. No data changes: the database is the same,
+  only the address the app uses to rea…
+
+  Full release notes: https://github.com/lawalletio/lawallet-nwc/releases/tag/v2.10.1
