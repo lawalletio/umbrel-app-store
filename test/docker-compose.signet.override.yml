@@ -5,10 +5,12 @@ services:
   app_proxy:
     image: busybox
     profiles: ["umbrel-only"]
+  signet-web:
+    container_name: lawallet-signet_signet-web_1
+    ports:
+      - "${SIGNET_UI_PORT:-2352}:80"
   signet-bitcoind:
     container_name: lawallet-signet_signet-bitcoind_1
-    ports:
-      - "${SIGNET_UI_PORT:-2352}:3000"
   signet-fulcrum:
     container_name: lawallet-signet_signet-fulcrum_1
   signet-frigate:
