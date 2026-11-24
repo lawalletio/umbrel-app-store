@@ -55,13 +55,16 @@
   ];
   async function refresh() {
     let lines = [];
+    let reachable = false;
     try {
       const r = await fetch("/__frigate/log", { headers: { Range: "bytes=-16384" }, cache: "no-store" });
+      reachable = r.ok || r.status === 404; // 404: Frigate hasn't written its log yet
       if (r.ok) lines = (await r.text()).split("\n").filter(Boolean);
     } catch {}
     const start = lines.map((l) => /Starting Frigate/.test(l)).lastIndexOf(true);
     const recent = start >= 0 ? lines.slice(start) : lines;
-    let state = lines.length ? ["Starting / indexing", "#58a6ff"] : ["Not running yet", "#888"];
+    let state = !reachable ? ["Status unavailable (can't reach the app; retrying)", "#888"]
+      : lines.length ? ["Starting / indexing", "#58a6ff"] : ["Not started yet", "#888"];
     for (let i = recent.length - 1; i >= 0; i--) {
       const hit = STATES.find(([re]) => re.test(recent[i]));
       if (hit) { state = hit.slice(1); break; }
