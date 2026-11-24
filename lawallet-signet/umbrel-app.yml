@@ -31,8 +31,10 @@ path: ""
 defaultUsername: ""
 defaultPassword: ""
 releaseNotes: >-
-  The dashboard now shows a Frigate panel with the Electrum + silent payments address
-  (port 60001), a copy button, Sparrow setup steps and Frigate's live status.
+  New Frigate tab in the dashboard: silent payments index status and height next to
+  Bitcoin Core and Fulcrum, mempool and heartbeat, the Electrum + silent payments address
+  (port 60001) with Sparrow setup, transactions indexed per block, Fulcrum stats and
+  Frigate's recent log.
 backupIgnore:
   - data/bitcoin/signet/blocks
   - data/bitcoin/signet/chainstate
