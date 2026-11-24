@@ -46,6 +46,23 @@ Run the app with local Postgres, Bitcoin Core regtest, and LND regtest:
 
 The script leaves the stack running when successful.
 
+## Package Smoke Test (runs before every release is published)
+
+`scripts/smoke-umbrel-package.sh` boots the real `lawallet-nwc/docker-compose.yml`
+the way umbrelOS runs it: on a shared `umbrel_main_network`, with umbreld's
+`lawallet-nwc_<service>_1` container names, and next to a decoy `postgres` from
+"another app" (as BTCPay Server has). Pass the previous compose to test the
+upgrade path on existing data:
+
+```bash
+git show origin/master:lawallet-nwc/docker-compose.yml > /tmp/previous.yml
+./scripts/smoke-umbrel-package.sh /tmp/previous.yml
+```
+
+`update-lawallet-nwc.yml` runs it before merging a release (so a failing
+release never reaches Umbrel nodes), and `smoke-lawallet-nwc.yml` runs it on
+pull requests that touch the package. It cleans up after itself.
+
 Default local endpoints:
 
 - LaWallet admin: http://127.0.0.1:2289/admin
