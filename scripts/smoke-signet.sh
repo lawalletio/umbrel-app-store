@@ -26,6 +26,12 @@ wait_for() { # description, command...
   echo "FAIL: ${what}" >&2; "${compose[@]}" logs --tail 60 >&2; exit 1
 }
 logs_have() { "${compose[@]}" logs "$1" 2>&1 | grep "$2" >/dev/null; } # not -q: early exit + pipefail = SIGPIPE failure
+stale_page_refreshed() { # a browser cached the page before the proxy existed and revalidates with its ETag
+  local etag
+  etag=$("${compose[@]}" exec -T signet-web wget -S -O /dev/null http://lawallet-signet_signet-bitcoind_1:3000/ 2>&1 |
+    sed -n 's/^ *[Ee][Tt]ag: //p' | tr -d '\r')
+  [ -n "${etag}" ] && curl -fsS -H "If-None-Match: ${etag}" "http://127.0.0.1:${SIGNET_UI_PORT}/" | grep -q /__frigate/tab.js
+}
 is_signet() {
   "${compose[@]}" exec -T signet-bitcoind bitcoin-cli -signet -rpcport=38332 -rpcuser=signet \
     -rpcpassword="${APP_PASSWORD}" getblockchaininfo | grep -q '"chain": "signet"'
@@ -33,6 +39,7 @@ is_signet() {
 
 wait_for "dashboard on :${SIGNET_UI_PORT}" curl -fsS "http://127.0.0.1:${SIGNET_UI_PORT}/"
 wait_for "frigate tab injected" sh -c "curl -fsS http://127.0.0.1:${SIGNET_UI_PORT}/ | grep -q /__frigate/tab.js"
+wait_for "stale cached page gets the tab" stale_page_refreshed
 wait_for "fulcrum stats proxied" sh -c "curl -fsS http://127.0.0.1:${SIGNET_UI_PORT}/__frigate/fulcrum | grep -q Controller"
 wait_for "frigate log readable" curl -fsS -H "Range: bytes=-512" "http://127.0.0.1:${SIGNET_UI_PORT}/__frigate/log"
 wait_for "bitcoind chain=signet" is_signet

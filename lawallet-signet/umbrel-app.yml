@@ -3,7 +3,7 @@ id: lawallet-signet
 name: Signet Node + SP
 tagline: Signet Bitcoin Core, Fulcrum and a silent payments Electrum server
 category: bitcoin
-version: "1.0.2"
+version: "1.0.3"
 port: 2352
 icon: https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-signet/icon.svg
 description: >-
@@ -31,7 +31,8 @@ path: ""
 defaultUsername: ""
 defaultPassword: ""
 releaseNotes: >-
-  Fixes the dashboard not loading after updating to 1.0.1.
+  Fixes the Frigate tab not showing in browsers that had the dashboard cached; a
+  normal reload is enough now.
 
 
   New Frigate tab in the dashboard: silent payments index status and height next to
