@@ -7,6 +7,8 @@ services:
     profiles: ["umbrel-only"]
   signet-web:
     container_name: lawallet-signet_signet-web_1
+    image: lawallet-signet-web:dev # built from images/signet-web, so the smoke test checks the source
+    build: ../images/signet-web
     ports:
       - "${SIGNET_UI_PORT:-2352}:80"
   signet-bitcoind:

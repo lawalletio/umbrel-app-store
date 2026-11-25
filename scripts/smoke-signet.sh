@@ -16,9 +16,9 @@ compose=(docker compose --project-name lawallet-signet
 
 mkdir -p "${APP_DATA_DIR}"
 cp -Rn "${ROOT_DIR}/lawallet-signet/data" "${APP_DATA_DIR}/" 2>/dev/null || true
-cp -R "${ROOT_DIR}/lawallet-signet/web" "${APP_DATA_DIR}/" # umbreld copies the app dir the same way
-"${compose[@]}" up -d
-"${compose[@]}" restart signet-web >/dev/null # pick up edits to web/ (bind-mounted files)
+# Only data/ is copied (umbreld does that on install; updates copy no app-folder files besides
+# compose, templates, exports.sh, torrc, hooks and the manifest). signet-web is built from source.
+"${compose[@]}" up -d --build
 
 wait_for() { # description, command...
   local what="$1"; shift
