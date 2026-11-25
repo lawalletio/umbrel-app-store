@@ -15,7 +15,7 @@ services:
   # Serves the Bitcoin Node dashboard unchanged, plus the Frigate tab (images/signet-web).
   # Config ships in the image: Umbrel app updates don't copy extra files from the app folder.
   signet-web:
-    image: masize/lawallet-signet-web:1.0.2@sha256:c97303d48e606171715b096c8b014906b1c8f7bf0623e14694c6e15a40f8047e
+    image: masize/lawallet-signet-web:1.0.3@sha256:2bfa26ef03b52883cc5e4567f776c874dd6ab4db8273c49b15a080d4157bf7f0
     restart: on-failure
     mem_limit: 64m
     depends_on:
