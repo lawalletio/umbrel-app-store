@@ -1,0 +1,42 @@
+version: "3.7"
+
+# Frigate on top of the Bitcoin Node app (RPC + ZMQ) and the Electrs/Fulcrum app (backend for
+# non-silent-payments calls). Services are prefixed "frigate-sp" because every Umbrel app shares
+# one Docker network and the official "frigate" (NVR) app already has a "web" service.
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: lawallet-frigate_frigate-sp-web_1
+      APP_PORT: 80
+
+  # Dashboard (images/frigate-web): a static page that reads Frigate's log.
+  frigate-sp-web:
+    image: masize/lawallet-frigate-web:1.0.0@sha256:a2bdf0a35a985bced49d660e3390097791ad7a1a9b967ba595edc530bbee5735
+    restart: on-failure
+    mem_limit: 64m
+    volumes:
+      - ${APP_DATA_DIR}/data:/frigate:ro
+
+  frigate-sp:
+    image: masize/frigate:1.6.1-1@sha256:937f81670d7dd414eb2a472f91fa8a0703c5831bd56e172561685505f6805d0f
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 1m
+    # ponytail: sized for an 8 GB Umbrel (2M-entry spk cache ≈ 800 MB heap, DuckDB capped at 1 GB).
+    # More RAM = faster first index: raise FRIGATE_CACHE_SIZE (10M ≈ 4 GB) with mem_limit.
+    mem_limit: 3g
+    ports:
+      - "50005:50005"
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    environment:
+      FRIGATE_NETWORK: ${APP_BITCOIN_NETWORK}
+      BITCOIND_RPC_URL: http://${APP_BITCOIN_NODE_IP}:${APP_BITCOIN_RPC_PORT}
+      BITCOIND_RPC_AUTH: ${APP_BITCOIN_RPC_USER}:${APP_BITCOIN_RPC_PASS}
+      BITCOIND_ZMQ_SEQUENCE: tcp://${APP_BITCOIN_NODE_IP}:${APP_BITCOIN_ZMQ_SEQUENCE_PORT}
+      BACKEND_ELECTRUM_SERVER: tcp://${APP_ELECTRS_NODE_IP}:${APP_ELECTRS_NODE_PORT}
+      FRIGATE_TCP: tcp://0.0.0.0:50005
+      FRIGATE_CACHE_SIZE: 2M
+      FRIGATE_DB_MEMORY_LIMIT: 1GB
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=40"

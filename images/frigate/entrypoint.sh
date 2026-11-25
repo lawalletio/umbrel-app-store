@@ -13,7 +13,13 @@ set -eu
 : "${FRIGATE_CACHE_SIZE:=1M}"
 : "${FRIGATE_DB_MEMORY_LIMIT:=512MB}"
 
-dir="${FRIGATE_HOME}/${FRIGATE_NETWORK}"
+# Where Frigate reads config.toml: the home itself on mainnet, a per-network folder otherwise
+# (named after drongo's Network home: testnet is testnet3). frigate.log always lands in the home.
+case "${FRIGATE_NETWORK}" in
+  mainnet) dir="${FRIGATE_HOME}" ;;
+  testnet) dir="${FRIGATE_HOME}/testnet3" ;;
+  *) dir="${FRIGATE_HOME}/${FRIGATE_NETWORK}" ;;
+esac
 mkdir -p "$dir"
 cat > "$dir/config.toml" <<EOF
 [core]

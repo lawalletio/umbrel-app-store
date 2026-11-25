@@ -1,0 +1,21 @@
+# Runs lawallet-frigate/docker-compose.yml outside Umbrel, on the network of a local lawallet-signet
+# stack that stands in for the Bitcoin Node and Electrs apps (see scripts/smoke-frigate.sh).
+services:
+  app_proxy:
+    image: busybox
+    profiles: ["umbrel-only"]
+  frigate-sp-web:
+    container_name: lawallet-frigate_frigate-sp-web_1
+    image: lawallet-frigate-web:dev # built from source, so the smoke test checks it
+    build: ../images/frigate-web
+    ports:
+      - "${FRIGATE_UI_PORT:-2353}:80"
+  frigate-sp:
+    container_name: lawallet-frigate_frigate-sp_1
+    image: frigate:dev
+    build: ../images/frigate
+
+networks:
+  default:
+    name: lawallet-signet_default
+    external: true
