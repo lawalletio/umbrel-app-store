@@ -12,16 +12,15 @@ services:
       APP_HOST: lawallet-signet_signet-web_1
       APP_PORT: 80
 
-  # Serves the Bitcoin Node dashboard unchanged, plus a Frigate access panel (web/).
+  # Serves the Bitcoin Node dashboard unchanged, plus the Frigate tab (images/signet-web).
+  # Config ships in the image: Umbrel app updates don't copy extra files from the app folder.
   signet-web:
-    image: nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    image: masize/lawallet-signet-web:1.0.2@sha256:c97303d48e606171715b096c8b014906b1c8f7bf0623e14694c6e15a40f8047e
     restart: on-failure
     mem_limit: 64m
     depends_on:
       - signet-bitcoind
     volumes:
-      - ${APP_DATA_DIR}/web/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ${APP_DATA_DIR}/web/frigate-tab.js:/srv/frigate-tab.js:ro
       - ${APP_DATA_DIR}/data/frigate:/frigate:ro
 
   signet-bitcoind:
