@@ -9,8 +9,20 @@ version: "3.7"
 services:
   app_proxy:
     environment:
-      APP_HOST: lawallet-signet_signet-bitcoind_1
-      APP_PORT: 3000
+      APP_HOST: lawallet-signet_signet-web_1
+      APP_PORT: 80
+
+  # Serves the Bitcoin Node dashboard unchanged, plus a Frigate access panel (web/).
+  signet-web:
+    image: nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    restart: on-failure
+    mem_limit: 64m
+    depends_on:
+      - signet-bitcoind
+    volumes:
+      - ${APP_DATA_DIR}/web/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${APP_DATA_DIR}/web/frigate-tab.js:/srv/frigate-tab.js:ro
+      - ${APP_DATA_DIR}/data/frigate:/frigate:ro
 
   signet-bitcoind:
     # Umbrel's own Bitcoin Node image (Core + dashboard), same digest as the official app.
@@ -56,6 +68,7 @@ services:
     environment:
       DATA_DIR: /data
       TCP: 0.0.0.0:50001 # internal only: Frigate is the public face
+      STATS: 0.0.0.0:8080 # read-only JSON for the Frigate tab, internal only
       BITCOIND: lawallet-signet_signet-bitcoind_1:38332
       RPCUSER: signet
       RPCPASSWORD: "${APP_PASSWORD}"

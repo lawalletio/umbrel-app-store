@@ -3,7 +3,7 @@ id: lawallet-signet
 name: Signet Node + SP
 tagline: Signet Bitcoin Core, Fulcrum and a silent payments Electrum server
 category: bitcoin
-version: "1.0.0"
+version: "1.0.1"
 port: 2352
 icon: https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-signet/icon.svg
 description: >-
@@ -30,7 +30,11 @@ dependencies: []
 path: ""
 defaultUsername: ""
 defaultPassword: ""
-releaseNotes: ""
+releaseNotes: >-
+  New Frigate tab in the dashboard: silent payments index status and height next to
+  Bitcoin Core and Fulcrum, mempool and heartbeat, the Electrum + silent payments address
+  (port 60001) with Sparrow setup, transactions indexed per block, Fulcrum stats and
+  Frigate's recent log.
 backupIgnore:
   - data/bitcoin/signet/blocks
   - data/bitcoin/signet/chainstate
