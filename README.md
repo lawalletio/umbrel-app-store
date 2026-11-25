@@ -36,6 +36,20 @@ This repository packages community apps for Umbrel.
 - Local smoke test: `./scripts/smoke-signet.sh` (checks wiring only; Electrum answers
   once the chain has synced)
 
+## Frigate
+
+- App id: `lawallet-frigate`
+- [Frigate](https://github.com/sparrowwallet/frigate) (BIP352 silent payments Electrum server)
+  on top of the existing Umbrel apps: Bitcoin Node for RPC + ZMQ, Electrs or Fulcrum as the
+  backend for every other Electrum call
+- Images: `masize/frigate` (`images/frigate/`), `masize/lawallet-frigate-web` (dashboard,
+  `images/frigate-web/`, reads only Frigate's log)
+- Ports: dashboard `2353`, Electrum + silent payments TCP `50005`
+- Umbrel dependencies: `bitcoin`, `electrs` (Fulcrum implements it)
+- Network follows the Bitcoin Node app (`APP_BITCOIN_NETWORK`)
+- Local smoke test: `./scripts/smoke-signet.sh && ./scripts/smoke-frigate.sh` (the signet stack
+  stands in for the Bitcoin Node and Electrs apps)
+
 ## Local Smoke Test
 
 Run the app with local Postgres, Bitcoin Core regtest, and LND regtest:

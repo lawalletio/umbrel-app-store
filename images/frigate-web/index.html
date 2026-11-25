@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Frigate</title>
+<link rel="icon" href="icon.svg">
+<style>
+@font-face{font-family:Outfit;font-weight:100 900;font-display:swap;src:url(fonts/outfit.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-weight:100 1000;font-display:swap;src:url(fonts/dm-sans.woff2) format("woff2")}
+:root{--accent:#3b8ee6;--accent-dim:#16324f;--green:#0bc39e;--red:#f87171;--muted:rgb(255 255 255/.5);--faint:rgb(255 255 255/.3)}
+*{box-sizing:border-box;margin:0}
+html,body{background:#000;color:#fff;font-family:"DM Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.outfit,h1,h2,h3{font-family:Outfit,system-ui,sans-serif;font-weight:400}
+.wrap{max-width:768px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header .brand{display:flex;align-items:center;gap:12px;min-width:0}
+header img{width:50px;height:50px;border-radius:14px;flex:none}
+header h1{font-size:24px;line-height:1.1}
+header p{font-size:13px;color:var(--muted)}
+.pill{position:relative;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:9999px;border:0;background:linear-gradient(#1c1c1c,#171717);color:rgb(255 255 255/.8);font:500 13px "DM Sans",sans-serif;white-space:nowrap;cursor:pointer}
+.card,.pill,.scene{isolation:isolate}
+.card::before,.pill::before,.scene::before{content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;background:linear-gradient(#313131,#31313100);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none}
+.card{position:relative;border-radius:24px;background:linear-gradient(#0f0f0f,#080808);overflow:hidden}
+.grad{background:linear-gradient(#fff,#ffffffa3);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+.hero{display:flex;flex-direction:column;align-items:center;padding:16px 16px 28px}
+.scene{position:relative;width:100%;height:256px;border-radius:16px;background:rgb(23 23 23/.2);overflow:hidden}
+.scene>svg{position:absolute;right:-30%;bottom:-80%;width:125%;pointer-events:none}
+.scene>svg.bird{right:8%;bottom:auto;top:10%;width:26%;max-width:120px;aspect-ratio:1;opacity:.9}
+.status{position:absolute;top:7%;left:5%;display:flex;align-items:center;gap:6px;font-size:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:#888;box-shadow:0 0 4px currentColor}
+.status b{font-weight:500}.status span{color:rgb(255 255 255/.6)}
+.big{position:absolute;top:70%;left:5%;font-size:30px;line-height:1.2}
+.big small{display:block;font:14px "DM Sans",sans-serif;color:var(--muted)}
+.big .pct{color:rgb(255 255 255/.6)}
+.side{width:100%;display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;flex-wrap:wrap}
+.side h3{font-size:16px;font-weight:500;width:100%;order:-1}
+.legend{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.legend li{display:flex;justify-content:space-between;gap:16px;min-width:150px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid rgb(255 255 255/.2);margin-right:4px;vertical-align:-2px}
+.legend span{color:rgb(255 255 255/.6)}.legend b{font-weight:400;color:rgb(255 255 255/.4)}
+@keyframes pulse{0%{transform:scale(.6);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+.pulse{transform-origin:center;transform-box:fill-box;animation:pulse 3.2s ease-out infinite}
+.pulse+.pulse{animation-delay:1.6s}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr)}
+.stats>div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px 8px;text-align:center}
+.stats>:nth-child(4n+2),.stats>:nth-child(4n+3){background:rgb(255 255 255/.05)}
+.stats h3{font-size:15px;font-weight:300;color:var(--faint)}
+.stats p{font:500 20px/1 Outfit,sans-serif}
+.stats p span+span{margin-left:4px;font-size:13px;font-weight:300;color:var(--muted);-webkit-text-fill-color:currentColor}
+
+.titled{padding:16px 16px 20px}
+.titled>header{margin-bottom:12px;padding-top:8px}
+.titled>header h2{font-size:20px}
+.titled>header span{font-size:12px;color:var(--muted)}
+.addr{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+.addr code{flex:1;min-width:0;padding:10px 14px;border-radius:9999px;background:rgb(255 255 255/.05);font:13px ui-monospace,Menlo,monospace;color:rgb(255 255 255/.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid rgb(255 255 255/.06);font-size:13px}
+.row:first-of-type{border-top:0}.row span{color:var(--muted)}.row b{font-weight:400;color:rgb(255 255 255/.8);text-align:right}
+.note{font-size:12px;color:rgb(255 255 255/.4);margin-top:12px}.note b{font-weight:500;color:rgb(255 255 255/.6)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:140px}
+.bars>div{flex:1;min-width:2px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.85}
+.bars>div:hover{opacity:1}
+.log{font:11px/1.6 ui-monospace,Menlo,monospace;color:rgb(255 255 255/.4);word-break:break-all}
+.log .err{color:var(--red)}
+.empty{font-size:12px;color:rgb(255 255 255/.4)}
+
+@media (min-width:768px){
+  .wrap{padding-top:32px}
+  header img{width:60px;height:60px;border-radius:16px}
+  header h1{font-size:28px}
+  .hero{flex-direction:row;padding:16px 24px}
+  .scene{flex:1;height:375px}
+  .big{top:80%}
+  .side{width:215px;flex-direction:column;justify-content:center;margin:0 0 0 8px;flex-wrap:nowrap}
+  .side h3{text-align:center;order:0}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .stats>div{height:120px;background:none!important}
+  .stats>:nth-child(even){background:rgb(255 255 255/.05)!important}
+  .titled{padding:16px 24px 20px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bird" viewBox="45 45 360 360"><path d="M140.95 109.01C143.4 109.22 151.82 112.81 158.11 116.47C169.61 123.16 188.69 137.87 196.53 146.06C198.47 148.09 200.96 150.45 202.06 151.31C204.61 153.3 210.16 159.33 212.44 162.57L214.14 165.67C214.3 165.96 214.34 170.95 214.4 173.6C214.5 178.28 215.17 185.49 215.89 189.66L217.06 196.42C217.22 196.74 217.39 197.07 217.6 197.4C217.63 197.44 217.64 197.48 217.67 197.52C217.69 197.55 217.72 197.58 217.74 197.61C217.77 197.66 217.82 197.7 217.86 197.75L221.78 200.66C225.85 203.72 228.57 205.41 231.34 206.21C231.65 206.3 231.96 206.38 232.27 206.44C235.83 207.11 239.44 206.69 243.02 206.42C243.63 206.37 244.24 206.34 244.82 206.49C246.13 206.82 246.27 206.97 247.45 207.49C248.11 207.78 249.14 208.37 254.47 207.82C254.47 207.82 261.66 206.97 261.67 207.07C261.67 207.09 261.85 207.31 261.66 207.42C260.77 207.93 257.82 209.1 256.36 209.84C255.01 210.52 253.91 211.12 252.96 211.75C252.48 212.06 252.04 212.39 251.63 212.73C251.01 213.24 250.46 213.79 249.9 214.41C249.31 215.07 248.79 215.8 248.29 216.53C247.56 217.62 246.81 218.92 245.94 220.52C244.59 222.98 244.41 224.45 244.84 229.01C245.69 237.95 246.96 240.85 251.67 244.44C256.15 247.86 264.57 252.29 272.42 255.35C278.1 257.56 279.38 258.94 284.01 267.82C285.6 270.88 288.22 275.86 289.81 278.92C299.36 297.23 309.2 325.86 309.7 336.79C309.83 339.7 309.58 341.14 309.02 340.99C308.91 340.96 308.77 340.88 308.65 340.71C308.25 340.18 307.99 339.57 307.74 338.96C307.23 337.74 305.64 335.38 304.17 333.71C302.71 332.04 300.02 328.88 298.2 326.69C296.38 324.5 293.75 321.54 292.37 320.12C289.46 317.12 284.78 310.31 284.16 309.56C277.66 301.63 270.43 294.07 265.53 284.73C265.34 283.61 260.16 280.45 252.82 276.94C238.43 270.06 230.56 263.37 226.15 254.3C222.82 247.45 220.74 243.93 218.74 242.43C217.05 241.17 214.92 240.59 213.1 239.52C212.23 239.01 211.62 238.63 210.86 238.37L199.92 244.32C193.84 247.63 186.46 251.32 183.55 252.57C180.64 253.83 177.08 255.93 175.65 257.26C174.21 258.59 171.19 261.88 170.87 261.92C170.15 262.02 169.03 259.19 168.85 259.08C167.73 258.38 166.9 258.1 167.12 256.99C167.24 256.41 169.3 255.12 171.71 254.16C174.7 252.97 176.87 251.51 178.54 249.54C181.11 246.52 192.27 237.96 199.99 233.08C202.95 231.21 204.18 231.18 204.83 229.33C205.37 227.36 204.91 225.31 204.97 223.28C205.08 216.56 198.28 214.39 195.09 209.65C195.02 209.54 194.95 209.46 194.88 209.35C189.28 201.5 188.12 192.35 186.46 183.05C184.14 169.99 183.33 166.6 182.29 165.7C181.58 165.09 179.39 162.44 177.42 159.8C165.93 144.43 156.97 131.84 156.69 131.43C153.19 126.14 149.08 121.06 147.27 118.23C147.05 117.89 145.53 115.72 143.8 113.52C141.93 111.14 140.15 109.34 140.3 109.11C140.38 108.99 140.6 108.96 140.95 108.99L140.95 109.01Z"/></symbol></svg>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="icon.svg" alt="Frigate logo"><div><h1 class="grad">Frigate</h1><p>Silent payments Electrum server<span data-k="ver"></span></p></div></div>
+    <span class="pill" data-k="net" title="Network of your Bitcoin Node">–</span>
+  </header>
+
+  <section class="card hero">
+    <div class="scene">
+      <svg viewBox="0 0 400 400" aria-hidden="true">
+        <defs><radialGradient id="g" cx="50%" cy="35%" r="65%"><stop offset="0" stop-color="#1a1d22"/><stop offset="1" stop-color="#000"/></radialGradient>
+        <pattern id="d" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="rgb(255 255 255/.12)"/></pattern></defs>
+        <circle cx="200" cy="200" r="150" fill="url(#g)" stroke="rgb(255 255 255/.08)"/>
+        <circle cx="200" cy="200" r="150" fill="url(#d)" opacity=".7"/>
+        <circle class="pulse" cx="200" cy="200" r="150" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+        <circle class="pulse" cx="200" cy="200" r="150" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      </svg>
+      <svg class="bird" aria-hidden="true"><use href="#bird" fill="#fff"/></svg>
+      <h3 class="status" role="status"><i class="dot" data-k="dot"></i><b data-k="state">Checking</b><span data-k="state2"></span></h3>
+      <h2 class="big"><small>Silent payments index</small><span class="grad" data-k="bigv">–</span> <span class="pct" data-k="pct"></span></h2>
+    </div>
+    <div class="side">
+      <h3 class="grad">Index progress</h3>
+      <svg viewBox="0 0 150 150" width="150" height="150" aria-hidden="true">
+        <circle cx="75" cy="75" r="58" fill="none" stroke="var(--accent-dim)" stroke-width="16"/>
+        <circle cx="75" cy="75" r="58" fill="none" stroke="var(--accent)" stroke-width="16" stroke-dasharray="364.4" stroke-dashoffset="364.4" transform="rotate(-90 75 75)" data-k="ring" style="transition:stroke-dashoffset .6s"/>
+        <text x="75" y="74" text-anchor="middle" fill="#fff" font-size="20" font-weight="500" font-family="Outfit" data-k="ringv">–</text>
+        <text x="75" y="93" text-anchor="middle" fill="rgb(255 255 255/.7)" font-size="11">Indexed</text>
+      </svg>
+      <ul class="legend">
+        <li><span><i style="background:var(--accent)"></i>Indexed</span><b data-k="lIdx">–</b></li>
+        <li><span><i style="background:var(--accent-dim)"></i>Chain tip</span><b data-k="lTip">–</b></li>
+        <li><span><i style="background:#0b1826"></i>Blocks left</span><b data-k="lLeft">–</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card stats">
+    <div title="Last block in the silent payments index"><h3>Index Tip</h3><p><span class="grad" data-k="tip">–</span></p></div>
+    <div title="Unconfirmed transactions Frigate tracks for silent payments"><h3>Mempool</h3><p><span class="grad" data-k="mem">–</span><span data-k="mem-u"></span></p></div>
+    <div title="Electrum backend (your Electrs or Fulcrum app) that Frigate proxies other wallet calls to"><h3>Backend</h3><p><span class="grad" data-k="be">–</span></p></div>
+    <div title="Time since Frigate's last health report (every 5 minutes) or indexing update"><h3>Last Update</h3><p><span class="grad" data-k="seen">–</span><span data-k="seen-u"></span></p></div>
+  </section>
+
+  <section class="card titled">
+    <header><h2>Connect</h2><span>TCP, no SSL</span></header>
+    <div class="addr"><code data-k="addr"></code><button class="pill" type="button" data-k="copy">Copy</button></div>
+    <div class="row"><span>Silent payments</span><b>BIP352 · blockchain.silentpayments.subscribe</b></div>
+    <div class="row"><span>Protocol</span><b>Electrum 1.3 – 1.6</b></div>
+    <div class="row"><span>Other wallet calls</span><b>Proxied to your Electrs or Fulcrum</b></div>
+    <p class="note">Sparrow: Settings → Server → Private Electrum → URL <b data-k="host"></b>, port <b data-k="port"></b>, SSL off.</p>
+  </section>
+
+  <section class="card stats" title="From Frigate's hourly report. Figures are rounded to the nearest ten, so under 10 shows as <10">
+    <div><h3>Sessions</h3><p><span class="grad" data-k="ses">–</span></p></div>
+    <div><h3>IP Addresses</h3><p><span class="grad" data-k="ips">–</span></p></div>
+    <div><h3>SP Subscriptions</h3><p><span class="grad" data-k="sps">–</span></p></div>
+    <div><h3>Notifications</h3><p><span class="grad" data-k="ntf">–</span><span data-k="ntf-u"></span></p></div>
+  </section>
+
+  <section class="card titled">
+    <header><h2>Indexed Transactions</h2><span data-k="barsInfo"></span></header>
+    <div class="bars" data-k="bars"></div>
+  </section>
+
+  <section class="card titled">
+    <header><h2>Frigate Log</h2><span data-k="errs"></span></header>
+    <div class="log" data-k="log"></div>
+  </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

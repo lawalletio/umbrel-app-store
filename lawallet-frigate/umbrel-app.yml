@@ -1,0 +1,40 @@
+manifestVersion: 1.1
+id: lawallet-frigate
+name: Frigate
+tagline: Silent payments Electrum server for your Bitcoin Node
+category: bitcoin
+version: "1.6.1"
+port: 2353
+icon: https://raw.githubusercontent.com/lawalletio/umbrel-app-store/master/lawallet-frigate/icon.svg
+description: >-
+  Frigate is an Electrum server that adds BIP352 silent payments scanning
+  (blockchain.silentpayments.subscribe) for wallets like Sparrow. It indexes silent payments
+  from your Bitcoin Node and proxies every other Electrum call to your Electrs or Fulcrum app,
+  so it adds no second copy of the chain.
+
+
+  Electrum (TCP, with silent payments): <your-umbrel>:50005
+
+
+  The dashboard shows the index progress, the mempool it tracks, wallet sessions and
+  subscriptions, and Frigate's recent log.
+
+
+  On mainnet, Frigate indexes from Taproot activation (block 709,632) before it serves
+  silent payments; that takes hours and about 18 GB of disk. It needs txindex, which the
+  Bitcoin Node app enables by default.
+developer: Sparrow Wallet
+website: https://github.com/sparrowwallet/frigate
+submitter: Agustin Kassis
+repo: https://github.com/lawalletio/umbrel-app-store
+support: https://github.com/sparrowwallet/frigate/issues
+gallery: []
+dependencies:
+  - bitcoin
+  - electrs
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+releaseNotes: ""
+backupIgnore:
+  - data
